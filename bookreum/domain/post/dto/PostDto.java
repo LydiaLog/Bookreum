@@ -20,6 +20,7 @@ public class PostDto {
 
     @Getter
     @Builder
+    @AllArgsConstructor
     public static class Response {
         private Long id;
         private String title;

@@ -8,5 +8,5 @@ import java.util.List;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<Comment> findByPostId(Long postId);
-    long countByPost(Post post); // ➕ 이 줄 추가!
+    long countByPost(Post post); 
 }

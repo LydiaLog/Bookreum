@@ -35,11 +35,7 @@ public class PostService {
                 .build();
 
         Post saved = postRepository.save(post);
-
-        long heartCount = 0;
-        long commentCount = 0;
-
-        return PostDto.Response.fromEntity(saved, user, heartCount, commentCount);
+        return PostDto.Response.fromEntity(saved, user, 0L, 0L);
     }
 
     public List<PostDto.Response> getAllPosts(User viewer) {
@@ -83,17 +79,25 @@ public class PostService {
     }
 
     public List<PostDto.Response> getPostsSorted(String sort, User viewer) {
-        List<Post> posts;
+        List<Post> posts = switch (sort) {
+            case "oldest" -> postRepository.findAllByOrderByCreatedAtAsc();
+            default -> postRepository.findAllByOrderByCreatedAtDesc();
+        };
 
-        switch (sort) {
-            case "oldest":
-                posts = postRepository.findAllByOrderByCreatedAtAsc();
-                break;
-            case "latest":
-            default:
-                posts = postRepository.findAllByOrderByCreatedAtDesc();
-                break;
-        }
+        return posts.stream()
+                .map(post -> {
+                    long heartCount = postHeartRepository.countByPost(post);
+                    long commentCount = commentRepository.countByPost(post);
+                    return PostDto.Response.fromEntity(post, viewer, heartCount, commentCount);
+                })
+                .collect(Collectors.toList());
+    }
+
+    public List<PostDto.Response> searchPosts(String keyword, String sort, User viewer) {
+        List<Post> posts = switch (sort) {
+            case "oldest" -> postRepository.searchByKeywordOrderByOldest(keyword);
+            default -> postRepository.searchByKeywordOrderByLatest(keyword);
+        };
 
         return posts.stream()
                 .map(post -> {

@@ -17,7 +17,6 @@ public class PostController {
     private final PostService postService;
 
     //게시글 작성
-
     @PostMapping
     public PostDto.Response createPost(@RequestBody PostDto.Request request) {
         // 임시 User, Book (추후 인증/조회 연동 예정)
@@ -29,12 +28,22 @@ public class PostController {
 
     /**
      * 게시글 전체 조회 (정렬 포함)
-     * sort = latest (최신순) | oldest (오래된순) | popular (인기순)
+     * sort = latest (최신순) | oldest (오래된순)
      */
     @GetMapping
     public List<PostDto.Response> getSortedPosts(@RequestParam(defaultValue = "latest") String sort) {
         User user = User.builder().id(1L).nickname("테스터").build(); // 임시 사용자
         return postService.getPostsSorted(sort, user);
+    }
+
+    //게시글 검색
+    @GetMapping("/search")
+    public List<PostDto.Response> searchPosts(
+            @RequestParam String keyword,
+            @RequestParam(defaultValue = "latest") String sort
+    ) {
+        User viewer = User.builder().id(1L).nickname("테스터").build(); // 임시 사용자
+        return postService.searchPosts(keyword, sort, viewer);
     }
 
     //특정 게시글 상세 조회 (댓글 포함)
@@ -44,8 +53,7 @@ public class PostController {
         return postService.getPostDetail(id, user);
     }
 
-
-     //게시글 수정
+    //게시글 수정
     @PutMapping("/{id}")
     public void updatePost(@PathVariable Long id, @RequestBody PostDto.Request request) {
         postService.updatePost(id, request);
