@@ -3,6 +3,8 @@ package com.bookreum.domain.post.entity;
 import com.bookreum.global.entity.BaseTimeEntity;
 import com.bookreum.domain.user.entity.User;
 import com.bookreum.domain.book.entity.Book;
+import java.util.List;
+import java.util.ArrayList;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,6 +26,9 @@ public class Post extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "book_id", nullable = false)
     private Book book;
+    
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PostHeart> postHearts = new ArrayList<>();
 
     @Column(nullable = false)
     private String title;
