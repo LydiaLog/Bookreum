@@ -2,7 +2,7 @@ import requests
 import pandas as pd
 import time
 
-TTB_KEY = "여기에_너의_TTBKEY_입력"  # 예: ttbwonj0XXXXXXXXX
+TTB_KEY = "ttbwonj011527001"  # 알라딘 API 키
 BASE_URL = "https://www.aladin.co.kr/ttb/api/ItemSearch.aspx"
 
 # 키워드 리스트 (원하는 분야로 확장 가능)

@@ -3,8 +3,7 @@ import pandas as pd
 import time
 from datetime import datetime
 
-# 📌 너의 알라딘 TTBKey를 여기에 입력
-TTB_KEY = "ttbwonj0XXXXXXXX"  # ← 너의 인증키로 바꿔줘!
+TTB_KEY = "ttbwonj011527001" # 알라딘 API 키
 
 BASE_URL = "https://www.aladin.co.kr/ttb/api/ItemSearch.aspx"
 
