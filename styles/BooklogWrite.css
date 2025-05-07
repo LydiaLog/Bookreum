@@ -1,0 +1,77 @@
+.booklog-write-container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.write-input-title {
+    width: 100%;
+    font-size: 30px;
+    border: none;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 20px;
+    outline: none;
+}
+  
+.write-book-select,
+.write-image-upload {
+    margin-bottom: 20px;
+    color: #555;
+}
+  
+.write-textarea {
+    width: 100%;
+    height: 500px;
+    padding: 10px;
+    font-family: 'Nanum Gothic', sans-serif;
+    font-size: 16px;
+    border: none;
+    background-color: #ddd;
+    resize: none;
+}
+
+.submit-button {
+    background-color: #B4C9A4;
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin-top: 10px;
+    display: block;
+    margin-left: auto;
+    margin-right: -20px;
+}
+  
+.submit-button:hover {
+    background-color: #9EB68F;
+}
+
+.write-buttons {
+    display: flex;
+    gap: 10px;
+    margin-right: -20px;
+}
+
+.resubmit-button {
+    background-color: #B4C9A4;
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 10px;
+    display: block;
+    margin-left: auto;
+}
+
+.cancel-button {
+    background-color: #ddd;
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 10px;
+}
