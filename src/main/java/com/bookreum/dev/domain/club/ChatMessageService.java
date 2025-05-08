@@ -1,4 +1,3 @@
-// com/bookreum/dev/domain/club/ChatMessageService.java
 package com.bookreum.dev.domain.club;
 
 import java.util.List;

@@ -1,4 +1,4 @@
-// com/bookreum/dev/domain/club/dto/ChatRoomDTO.java
+
 package com.bookreum.dev.domain.club;
 
 import lombok.*;

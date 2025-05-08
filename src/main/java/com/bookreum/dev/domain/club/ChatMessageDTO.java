@@ -1,4 +1,3 @@
-// com/bookreum/dev/domain/club/dto/ChatMessageDTO.java
 package com.bookreum.dev.domain.club;
 
 import java.time.LocalDateTime;
