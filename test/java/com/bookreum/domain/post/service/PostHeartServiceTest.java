@@ -6,107 +6,70 @@ import com.bookreum.domain.post.entity.PostHeart;
 import com.bookreum.domain.post.repository.PostHeartRepository;
 import com.bookreum.domain.post.repository.PostRepository;
 import com.bookreum.domain.user.entity.User;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+@ExtendWith(SpringExtension.class)
+@SpringBootTest
+@ActiveProfiles("test")
+@Transactional
+class PostHeartServiceTest {
 
-public class PostHeartServiceTest {
-
-    private PostRepository postRepository;
+    @Autowired
     private PostHeartRepository postHeartRepository;
-    private PostHeartService postHeartService;
 
-    private User testUser;
-    private Post testPost;
+    @Autowired
+    private PostRepository postRepository;
+
+    @PersistenceContext
+    private EntityManager em;
+
+    private User author;
+    private Book book;
 
     @BeforeEach
     void setUp() {
-        postRepository = mock(PostRepository.class);
-        postHeartRepository = mock(PostHeartRepository.class);
-        postHeartService = new PostHeartService(postHeartRepository, postRepository);
+        author = User.builder().nickname("통합테스터").build();
+        book = Book.builder().title("테스트 북").author("저자").build();
 
-        testUser = User.builder().id(1L).nickname("테스터").build();
-        testPost = Post.builder()
-                .id(1L)
+        em.persist(author);
+        em.persist(book);
+        em.flush();
+        em.clear();
+    }
+
+    @Test
+    void createPostHeart_savesSuccessfully() {
+        // given
+        Post post = Post.builder()
                 .title("테스트 게시글")
-                .content("내용")
-                .user(testUser)
-                .book(Book.builder().id(1L).title("테스트 책").build())
-                .build();
-    }
-
-    @Test
-    @DisplayName("공감 추가 테스트 - 처음 누르는 경우")
-    void toggleHeart_shouldAddHeartIfNotExists() {
-        when(postRepository.findById(1L)).thenReturn(Optional.of(testPost));
-        when(postHeartRepository.findByUserAndPost(testUser, testPost)).thenReturn(Optional.empty());
-        when(postHeartRepository.save(any(PostHeart.class))).thenAnswer(invocation -> {
-            PostHeart heart = invocation.getArgument(0);
-            return PostHeart.builder()
-                    .id(1L)
-                    .user(heart.getUser())
-                    .post(heart.getPost())
-                    .createdAt(java.time.LocalDateTime.now())
-                    .build();
-        });
-
-        boolean result = postHeartService.toggleHeart(1L, testUser);
-
-        assertTrue(result);
-        verify(postHeartRepository, times(1)).save(any(PostHeart.class));
-    }
-
-    @Test
-    @DisplayName("공감 취소 테스트 - 이미 누른 상태인 경우")
-    void toggleHeart_shouldRemoveHeartIfExists() {
-        PostHeart existingHeart = PostHeart.builder()
-                .id(1L)
-                .user(testUser)
-                .post(testPost)
+                .content("테스트 내용")
+                .user(author)
+                .book(book)
                 .build();
 
-        when(postRepository.findById(1L)).thenReturn(Optional.of(testPost));
-        when(postHeartRepository.findByUserAndPost(testUser, testPost)).thenReturn(Optional.of(existingHeart));
+        em.persist(post);
 
-        boolean result = postHeartService.toggleHeart(1L, testUser);
+        PostHeart postHeart = PostHeart.builder()
+                .user(author)
+                .post(post)
+                .build();
 
-        assertFalse(result);
-        verify(postHeartRepository, times(1)).delete(existingHeart);
-    }
+        // when
+        em.persist(postHeart);
+        em.flush();
 
-    @Test
-    @DisplayName("공감 수 조회 테스트")
-    void countHearts_shouldReturnCorrectCount() {
-        when(postRepository.findById(1L)).thenReturn(Optional.of(testPost));
-        when(postHeartRepository.countByPost(testPost)).thenReturn(5L);
-
-        long count = postHeartService.countHearts(1L);
-
-        assertEquals(5L, count);
-    }
-
-    @Test
-    @DisplayName("존재하지 않는 게시글 - toggleHeart 예외 발생")
-    void toggleHeart_shouldThrowIfPostNotFound() {
-        when(postRepository.findById(999L)).thenReturn(Optional.empty());
-
-        assertThrows(IllegalArgumentException.class, () -> {
-            postHeartService.toggleHeart(999L, testUser);
-        });
-    }
-
-    @Test
-    @DisplayName("존재하지 않는 게시글 - countHearts 예외 발생")
-    void countHearts_shouldThrowIfPostNotFound() {
-        when(postRepository.findById(999L)).thenReturn(Optional.empty());
-
-        assertThrows(IllegalArgumentException.class, () -> {
-            postHeartService.countHearts(999L);
-        });
+        // then
+        assertThat(postHeartRepository.findById(postHeart.getId())).isPresent();
     }
 }

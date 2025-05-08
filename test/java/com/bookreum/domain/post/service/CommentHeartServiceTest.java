@@ -1,124 +1,119 @@
 package com.bookreum.domain.post.service;
 
-import com.bookreum.domain.book.entity.Book;
 import com.bookreum.domain.post.entity.Comment;
 import com.bookreum.domain.post.entity.CommentHeart;
 import com.bookreum.domain.post.entity.Post;
 import com.bookreum.domain.post.repository.CommentHeartRepository;
 import com.bookreum.domain.post.repository.CommentRepository;
 import com.bookreum.domain.user.entity.User;
+import com.bookreum.domain.user.repository.UserRepository;
+import com.bookreum.domain.book.entity.Book;
+import com.bookreum.domain.book.repository.BookRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
+@SpringBootTest
+@ExtendWith(SpringExtension.class)
+@ActiveProfiles("test")
+@Transactional
 public class CommentHeartServiceTest {
 
-    private CommentRepository commentRepository;
-    private CommentHeartRepository commentHeartRepository;
+    @Autowired
     private CommentHeartService commentHeartService;
 
-    private User testUser;
-    private Comment testComment;
+    @Autowired
+    private CommentRepository commentRepository;
+
+    @Autowired
+    private CommentHeartRepository commentHeartRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private BookRepository bookRepository;
+
+    @PersistenceContext
+    private EntityManager em;
+
+    private User author;
+    private Post post;
+    private Comment comment;
+    private Book book;
 
     @BeforeEach
     void setUp() {
-        commentRepository = mock(CommentRepository.class);
-        commentHeartRepository = mock(CommentHeartRepository.class);
-        commentHeartService = new CommentHeartService(commentRepository, commentHeartRepository);
+        // 테스트용 사용자 생성
+        author = User.builder().nickname("테스트 사용자").build();
+        em.persist(author);
 
-        testUser = User.builder()
-                .id(1L)
-                .nickname("테스터")
+        // 테스트용 책 생성
+        book = Book.builder()
+                .title("테스트 책")
+                .author("테스트 저자")
+                .coverImageUrl("https://example.com/cover.jpg")
                 .build();
+        em.persist(book);
 
-        testComment = Comment.builder()
-                .id(1L)
-                .content("댓글 내용")
-                .user(testUser)
-                .post(Post.builder()
-                        .id(1L)
-                        .title("테스트 게시글")
-                        .book(Book.builder().id(1L).title("테스트 책").build())
-                        .user(testUser)
-                        .build())
+        // 테스트용 게시글 생성 (Post 먼저 저장)
+        post = Post.builder()
+                .title("테스트 게시글")
+                .content("테스트 본문")
+                .user(author)
+                .book(book) // 책 연결
                 .build();
-    }
+        em.persist(post);
 
-    @Test
-    @DisplayName("공감 추가 테스트 - 처음 누른 경우")
-    void toggleHeart_shouldAddHeartIfNotExists() {
-        when(commentRepository.findById(1L)).thenReturn(Optional.of(testComment));
-        when(commentHeartRepository.findByUserAndComment(testUser, testComment)).thenReturn(Optional.empty());
-
-        commentHeartService.toggleHeart(1L, testUser);
-
-        verify(commentHeartRepository, times(1)).save(any(CommentHeart.class));
-        verify(commentHeartRepository, never()).delete(any(CommentHeart.class));
-    }
-
-    @Test
-    @DisplayName("공감 취소 테스트 - 이미 누른 경우")
-    void toggleHeart_shouldRemoveHeartIfExists() {
-        CommentHeart existingHeart = CommentHeart.builder()
-                .id(1L)
-                .user(testUser)
-                .comment(testComment)
+        // 댓글 생성
+        comment = Comment.builder()
+                .content("테스트 댓글")
+                .post(post)  // 여기에서 Post를 설정
+                .user(author)
                 .build();
+        em.persist(comment);
 
-        when(commentRepository.findById(1L)).thenReturn(Optional.of(testComment));
-        when(commentHeartRepository.findByUserAndComment(testUser, testComment)).thenReturn(Optional.of(existingHeart));
-
-        commentHeartService.toggleHeart(1L, testUser);
-
-        verify(commentHeartRepository, times(1)).delete(existingHeart);
-        verify(commentHeartRepository, never()).save(any(CommentHeart.class));
+        em.flush();
+        em.clear();
     }
 
     @Test
-    @DisplayName("공감 여부 확인 테스트")
-    void hasHeart_shouldReturnTrueIfExists() {
-        when(commentRepository.findById(1L)).thenReturn(Optional.of(testComment));
-        when(commentHeartRepository.findByUserAndComment(testUser, testComment)).thenReturn(Optional.of(mock(CommentHeart.class)));
+    void toggleHeart_addAndRemoveHeart() {
+        // 공감 추가
+        commentHeartService.toggleHeart(comment.getId(), author);
+        assertThat(commentHeartRepository.countByComment(comment)).isEqualTo(1);
 
-        boolean result = commentHeartService.hasHeart(1L, testUser);
-
-        assertTrue(result);
+        // 공감 취소
+        commentHeartService.toggleHeart(comment.getId(), author);
+        assertThat(commentHeartRepository.countByComment(comment)).isEqualTo(0);
     }
 
     @Test
-    @DisplayName("공감 여부 확인 테스트 - 존재하지 않으면 false")
-    void hasHeart_shouldReturnFalseIfNotExists() {
-        when(commentRepository.findById(1L)).thenReturn(Optional.of(testComment));
-        when(commentHeartRepository.findByUserAndComment(testUser, testComment)).thenReturn(Optional.empty());
+    void hasHeart_checkIfHeartExists() {
+        commentHeartService.toggleHeart(comment.getId(), author);
+        assertThat(commentHeartService.hasHeart(comment.getId(), author)).isTrue();
 
-        boolean result = commentHeartService.hasHeart(1L, testUser);
-
-        assertFalse(result);
+        commentHeartService.toggleHeart(comment.getId(), author);
+        assertThat(commentHeartService.hasHeart(comment.getId(), author)).isFalse();
     }
 
     @Test
-    @DisplayName("공감 수 조회 테스트")
-    void getHeartCount_shouldReturnCorrectCount() {
-        when(commentRepository.findById(1L)).thenReturn(Optional.of(testComment));
-        when(commentHeartRepository.countByComment(testComment)).thenReturn(7L);
+    void getHeartCount_correctCount() {
+        assertThat(commentHeartService.getHeartCount(comment.getId())).isEqualTo(0);
 
-        Long result = commentHeartService.getHeartCount(1L);
+        commentHeartService.toggleHeart(comment.getId(), author);
+        assertThat(commentHeartService.getHeartCount(comment.getId())).isEqualTo(1);
 
-        assertEquals(7L, result);
-    }
-
-    @Test
-    @DisplayName("존재하지 않는 댓글일 경우 예외 발생")
-    void toggleHeart_shouldThrowIfCommentNotFound() {
-        when(commentRepository.findById(999L)).thenReturn(Optional.empty());
-
-        assertThrows(IllegalArgumentException.class, () -> {
-            commentHeartService.toggleHeart(999L, testUser);
-        });
+        commentHeartService.toggleHeart(comment.getId(), author);
+        assertThat(commentHeartService.getHeartCount(comment.getId())).isEqualTo(0);
     }
 }

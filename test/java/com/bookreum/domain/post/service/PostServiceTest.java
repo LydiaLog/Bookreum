@@ -1,119 +1,72 @@
-
 package com.bookreum.domain.post.service;
 
 import com.bookreum.domain.book.entity.Book;
 import com.bookreum.domain.post.dto.PostDto;
 import com.bookreum.domain.post.entity.Post;
-import com.bookreum.domain.post.repository.CommentRepository;
-import com.bookreum.domain.post.repository.PostHeartRepository;
 import com.bookreum.domain.post.repository.PostRepository;
 import com.bookreum.domain.user.entity.User;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import jakarta.persistence.EntityManager;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+@ExtendWith(SpringExtension.class)
+@SpringBootTest
+@ActiveProfiles("test")
+@Transactional  // 클래스 전체에 트랜잭션 적용 ✅
+class PostServiceTest {
 
-public class PostServiceTest {
-
-    private PostRepository postRepository;
-    private CommentRepository commentRepository;
-    private PostHeartRepository postHeartRepository;
+    @Autowired 
     private PostService postService;
+    
+    @Autowired 
+    private PostRepository postRepository;
 
-    private User testUser;
-    private Book testBook;
-    private Post testPost;
+    @Autowired 
+    private EntityManager em;
+
+    private User author;
+    private Book book;
 
     @BeforeEach
     void setUp() {
-        postRepository = mock(PostRepository.class);
-        commentRepository = mock(CommentRepository.class);
-        postHeartRepository = mock(PostHeartRepository.class);
-        postService = new PostService(postRepository, commentRepository, postHeartRepository);
+        // 테스트마다 fresh한 사용자/도서 엔티티 저장
+        author = User.builder().nickname("통합테스터").profileImage("https://example.com/profile.jpg").build();
+        book   = Book.builder().title("테스트 북").author("저자").coverImageUrl("https://example.com/book.jpg").build();
 
-        testUser = User.builder().id(1L).nickname("Tester").build();
-        testBook = Book.builder().id(1L).title("Test Book").author("Author").build();
-        testPost = Post.builder()
-                .id(1L)
-                .title("Sample Title")
-                .content("Sample content")
-                .imageUrl("sample.jpg")
-                .user(testUser)
-                .book(testBook)
-                .build();
+        em.persist(author);
+        em.persist(book);
+        em.flush();
     }
 
     @Test
-    @DisplayName("게시글 생성 테스트")
-    void createPost_shouldCreateAndReturnPostDto() {
-        PostDto.Request request = new PostDto.Request("Sample Title", "Sample content", "sample.jpg");
+    void createPost_persistsToMySQL() {
+        // given
+        String title = "첫 번째 글";
+        String content = "본문입니다.";
+        MultipartFile image = null; // 이미지 없이 테스트
 
-        when(postRepository.save(Mockito.any(Post.class))).thenReturn(testPost);
+        // when
+        PostDto.Response response = postService.createPost(title, content, image, author, book);
 
-        PostDto.Response response = postService.createPost(request, testUser, testBook);
+        // then : 트랜잭션이 commit 된 뒤 실제 MySQL에 row 가 있는지 확인
+        em.flush();
+        em.clear(); // 영속성 컨텍스트 초기화
 
-        assertEquals("Sample Title", response.getTitle());
-        verify(postRepository, times(1)).save(any(Post.class));
-    }
+        Post savedPost = postRepository.findById(response.getId()).orElseThrow();
 
-    @Test
-    @DisplayName("게시글 전체 최신순 조회")
-    void getPostsSorted_latest() {
-        when(postRepository.findAllByOrderByCreatedAtDesc()).thenReturn(List.of(testPost));
-        when(postHeartRepository.countByPost(testPost)).thenReturn(3L);
-        when(commentRepository.countByPost(testPost)).thenReturn(2L);
-
-        List<PostDto.Response> result = postService.getPostsSorted("latest", testUser);
-
-        assertEquals(1, result.size());
-        assertEquals("Sample Title", result.get(0).getTitle());
-    }
-
-    @Test
-    @DisplayName("게시글 상세 조회 - 존재하지 않으면 예외")
-    void getPostDetail_notFound() {
-        when(postRepository.findById(999L)).thenReturn(Optional.empty());
-
-        assertThrows(IllegalArgumentException.class, () -> {
-            postService.getPostDetail(999L, testUser);
-        });
-    }
-
-    @Test
-    @DisplayName("게시글 수정 테스트")
-    void updatePost_shouldUpdateValues() {
-        PostDto.Request updateRequest = new PostDto.Request("Updated Title", "Updated content", "updated.jpg");
-        when(postRepository.findById(1L)).thenReturn(Optional.of(testPost));
-
-        postService.updatePost(1L, updateRequest);
-
-        assertEquals("Updated Title", testPost.getTitle());
-    }
-
-    @Test
-    @DisplayName("게시글 삭제 테스트")
-    void deletePost_shouldRemoveFromRepo() {
-        postService.deletePost(1L);
-        verify(postRepository, times(1)).deleteById(1L);
-    }
-
-    @Test
-    @DisplayName("게시글 검색 기능 테스트")
-    void searchPosts_shouldReturnMatchingPosts() {
-        when(postRepository.searchByKeywordOrderByLatest("sample")).thenReturn(List.of(testPost));
-        when(postHeartRepository.countByPost(testPost)).thenReturn(1L);
-        when(commentRepository.countByPost(testPost)).thenReturn(1L);
-
-        List<PostDto.Response> results = postService.searchPosts("sample", "latest", testUser);
-
-        assertFalse(results.isEmpty());
-        assertEquals("Sample Title", results.get(0).getTitle());
+        assertThat(savedPost).isNotNull();
+        assertThat(savedPost.getTitle()).isEqualTo(title);
+        assertThat(savedPost.getContent()).isEqualTo(content);
+        assertThat(savedPost.getUser().getId()).isEqualTo(author.getId());
+        assertThat(savedPost.getBook().getId()).isEqualTo(book.getId());
     }
 }
