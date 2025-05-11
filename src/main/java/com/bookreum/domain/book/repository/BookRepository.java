@@ -8,7 +8,7 @@ import java.util.Optional;
 import java.util.List;
 
 @Repository
-public interface BookRepository extends JpaRepository<Book, Long> {
+public interface BookRepository extends JpaRepository<Book, Integer> {
 
     // ISBN으로 책 찾기 (중복 방지)
     Optional<Book> findByTitleAndAuthor(String title, String author);

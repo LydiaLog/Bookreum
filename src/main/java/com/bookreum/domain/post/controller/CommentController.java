@@ -20,26 +20,26 @@ public class CommentController {
     // 댓글 생성
     @PostMapping
     public CommentDto.Response createComment(@RequestBody CommentDto.Request request) {
-        User user = User.builder().id(1L).nickname("테스터").build();
+        User user = User.builder().id(1).nickname("테스터").build();
         Post post = Post.builder().id(request.getPostId()).build();
         return commentService.createComment(request, user, post);
     }
 
     // 특정 게시글의 댓글 전체 조회 (본인 여부 확인)
     @GetMapping("/post/{postId}")
-    public List<CommentDto.Response> getCommentsByPost(@PathVariable Long postId, @RequestParam boolean isOwner) {
+    public List<CommentDto.Response> getCommentsByPost(@PathVariable Integer postId, @RequestParam boolean isOwner) {
         return commentService.getCommentsByPost(postId, isOwner);
     }
 
     // 댓글 삭제
     @DeleteMapping("/{id}")
-    public void deleteComment(@PathVariable Long id) {
+    public void deleteComment(@PathVariable Integer id) {
         commentService.deleteComment(id);
     }
 
     // 댓글 수정
     @PutMapping("/{id}")
-    public void updateComment(@PathVariable Long id, @RequestBody CommentDto.Request request) {
+    public void updateComment(@PathVariable Integer id, @RequestBody CommentDto.Request request) {
         commentService.updateComment(id, request.getContent());
     }
 }

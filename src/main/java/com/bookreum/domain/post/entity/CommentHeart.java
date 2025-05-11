@@ -15,7 +15,7 @@ public class CommentHeart {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -31,5 +31,14 @@ public class CommentHeart {
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
+    }
+
+    // Setter 메소드로 직접 변경 가능
+    public void setComment(Comment comment) {
+        this.comment = comment;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }

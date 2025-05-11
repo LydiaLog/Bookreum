@@ -7,22 +7,24 @@ import java.util.List;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Setter
+@NoArgsConstructor(access = AccessLevel.PUBLIC)
 @AllArgsConstructor
 @Builder
+@Table(name = "book") // ✅ 테이블 명 명시 (DB의 테이블명과 매칭)
 public class Book {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
-    @Column(nullable = false)
+    @Column(nullable = false) // ✅ 필수값으로 지정
     private String title;
 
-    @Column(nullable = false)
+    @Column(nullable = false) // ✅ 필수값으로 지정
     private String author;
 
-    @Column(nullable = true)
+    @Column(length = 255)
     private String coverImageUrl;
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)

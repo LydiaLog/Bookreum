@@ -15,7 +15,7 @@ public class Comment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", nullable = false)
@@ -35,9 +35,22 @@ public class Comment {
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
     }
-    
+
+    // Setter 메소드로 직접 변경 가능
+    public void setPost(Post post) {
+        this.post = post;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    // Update method
     public void updateContent(String newContent) {
         this.content = newContent;
     }
-
 }

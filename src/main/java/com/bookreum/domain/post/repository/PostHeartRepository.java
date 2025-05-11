@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
 
-public interface PostHeartRepository extends JpaRepository<PostHeart, Long> {
+public interface PostHeartRepository extends JpaRepository<PostHeart, Integer> {
 	//토글용 좋아요 여부 확인
     Optional<PostHeart> findByUserAndPost(User user, Post post);
     //글별 공감 수 확인

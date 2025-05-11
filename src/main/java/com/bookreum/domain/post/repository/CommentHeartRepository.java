@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 import java.util.List;
 
-public interface CommentHeartRepository extends JpaRepository<CommentHeart, Long> {
+public interface CommentHeartRepository extends JpaRepository<CommentHeart, Integer> {
 
     // 특정 유저가 특정 댓글에 공감했는지 확인
     Optional<CommentHeart> findByUserAndComment(User user, Comment comment);

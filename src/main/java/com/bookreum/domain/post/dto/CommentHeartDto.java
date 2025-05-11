@@ -17,9 +17,9 @@ public class CommentHeartDto {
     @Getter
     @Builder
     public static class Response {
-        private Long id;
-        private Long userId;
-        private Long commentId;
+        private Integer id;
+        private Integer userId;
+        private Integer commentId;
         private String createdAt;
 
         public static Response fromEntity(CommentHeart entity) {

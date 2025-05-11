@@ -2,6 +2,7 @@ package com.bookreum.domain.post.dto;
 
 import com.bookreum.domain.post.entity.Post;
 import com.bookreum.domain.user.entity.User;
+import java.time.format.DateTimeFormatter;
 import lombok.*;
 
 import java.util.List;
@@ -22,7 +23,7 @@ public class PostDto {
     @Builder
     @AllArgsConstructor
     public static class Response {
-        private Long id;
+        private Integer id;
         private String title;
         private String content;
         private String imageUrl;
@@ -30,13 +31,13 @@ public class PostDto {
         private String bookTitle;
         private String bookAuthor;
         private String bookCoverImageUrl;
-
-        // 마음, 댓글 수 작성자에게만 보이게 처리
+        private String createdAt; // 생성 시간 추가
         private Long heartCount;
         private Long commentCount;
 
         public static Response fromEntity(Post post, User viewer, Long heartCount, Long commentCount) {
-            boolean isAuthor = post.getUser().getId().equals(viewer.getId());
+            boolean isAuthor = (viewer != null && post.getUser().getId().equals(viewer.getId()));
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
             return Response.builder()
                     .id(post.getId())
@@ -47,16 +48,18 @@ public class PostDto {
                     .bookTitle(post.getBook().getTitle())
                     .bookAuthor(post.getBook().getAuthor())
                     .bookCoverImageUrl(post.getBook().getCoverImageUrl())
+                    .createdAt(post.getCreatedAt().format(formatter)) // 날짜만 표시
                     .heartCount(isAuthor ? heartCount : null)
                     .commentCount(isAuthor ? commentCount : null)
                     .build();
         }
     }
 
+
     @Getter
     @Builder
     public static class DetailResponse {
-        private Long id;
+        private Integer id;
         private String title;
         private String content;
         private String imageUrl;
@@ -69,7 +72,7 @@ public class PostDto {
         private List<CommentDto.Response> comments;
 
         public static DetailResponse fromEntity(Post post, List<CommentDto.Response> comments, long heartCount, User viewer) {
-            boolean isAuthor = post.getUser().getId().equals(viewer.getId());
+            boolean isAuthor = (viewer != null && post.getUser().getId().equals(viewer.getId()));
 
             return DetailResponse.builder()
                     .id(post.getId())
@@ -85,4 +88,17 @@ public class PostDto {
                     .build();
         }
     }
+    @Getter
+    @Builder
+    public static class SimpleResponse {
+        private Integer id;
+        private String title;
+        private String content;
+        private String date;
+        private String bookTitle;
+        private String bookAuthor;
+        private String coverUrl;
+        private String nickname;
+    }
+
 }

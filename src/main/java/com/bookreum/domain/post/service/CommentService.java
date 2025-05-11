@@ -22,6 +22,7 @@ public class CommentService {
 
     @Transactional
     public CommentDto.Response createComment(CommentDto.Request request, User user, Post post) {
+        // 빌더 패턴 사용으로 Comment 생성
         Comment comment = Comment.builder()
                 .content(request.getContent())
                 .user(user)
@@ -33,7 +34,7 @@ public class CommentService {
     }
 
     // 댓글 조회 (소유자 여부에 따른 통계 노출)
-    public List<CommentDto.Response> getCommentsByPost(Long postId, boolean isOwner) {
+    public List<CommentDto.Response> getCommentsByPost(Integer postId, boolean isOwner) {
         return commentRepository.findByPostId(postId).stream()
                 .map(comment -> {
                     long heartCount = isOwner ? commentHeartRepository.countByComment(comment) : 0;
@@ -43,14 +44,17 @@ public class CommentService {
     }
 
     @Transactional
-    public void deleteComment(Long id) {
+    public void deleteComment(Integer id) {
         commentRepository.deleteById(id);
     }
 
     @Transactional
-    public void updateComment(Long commentId, String newContent) {
+    public void updateComment(Integer commentId, String newContent) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 댓글이 존재하지 않습니다."));
-        comment.updateContent(newContent);
+        
+        // Setter로 내용 업데이트
+        comment.setContent(newContent);
+        commentRepository.save(comment); // 변경 내용 저장
     }
 }

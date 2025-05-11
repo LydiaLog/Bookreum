@@ -51,7 +51,7 @@ class CommentServiceTest {
     private User user;
     private Post post;
     private Book book;
-    private Long postId;
+    private Integer postId;
 
     @BeforeEach
     void setUp() {

@@ -17,7 +17,7 @@ public class PostHeartService {
     private final PostRepository postRepository;
 
     @Transactional
-    public boolean toggleHeart(Long postId, User user) {
+    public boolean toggleHeart(Integer postId, User user) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Post not found"));
 
@@ -36,7 +36,7 @@ public class PostHeartService {
                 });
     }
 
-    public long countHearts(Long postId) {
+    public long countHearts(Integer postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Post not found"));
         return postHeartRepository.countByPost(post);

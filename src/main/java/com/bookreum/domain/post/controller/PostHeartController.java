@@ -14,9 +14,9 @@ public class PostHeartController {
 
     // toggle 방식 공감
     @PostMapping("/{id}/heart")
-    public String toggleHeart(@PathVariable Long id) {
+    public String toggleHeart(@PathVariable Integer id) {
         // 임시 유저 (추후 로그인 연동)
-        User user = User.builder().id(1L).nickname("테스터").build();
+        User user = User.builder().id(1).nickname("테스터").build();
 
         boolean added = postHeartService.toggleHeart(id, user);
         return added ? "공감 추가됨" : "공감 취소됨";
@@ -24,7 +24,7 @@ public class PostHeartController {
 
     // 공감 수 조회
     @GetMapping("/{id}/heart-count")
-    public long countHearts(@PathVariable Long id) {
+    public long countHearts(@PathVariable Integer id) {
         return postHeartService.countHearts(id);
     }
 }

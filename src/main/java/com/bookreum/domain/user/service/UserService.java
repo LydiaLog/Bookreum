@@ -20,7 +20,7 @@ public class UserService {
     private final PostRepository postRepository;
     private final PostHeartRepository postHeartRepository;
 
-    public List<PostDto.Response> getPostsByUser(Long userId) {
+    public List<PostDto.Response> getPostsByUser(Integer userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
         return postRepository.findByUserOrderByCreatedAtDesc(user).stream()
@@ -32,7 +32,7 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    public List<PostDto.Response> getLikedPosts(Long userId) {
+    public List<PostDto.Response> getLikedPosts(Integer userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
         return postHeartRepository.findByUser(user).stream()

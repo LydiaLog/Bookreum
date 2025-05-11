@@ -17,13 +17,13 @@ public class UserController {
 	
 	//내가 쓴 글 목록
 	@GetMapping("/{userId}/posts")
-	public List<PostDto.Response> getMyPosts(@PathVariable Long userId){
+	public List<PostDto.Response> getMyPosts(@PathVariable Integer userId){
 		return userService.getPostsByUser(userId);  // 여기 수정
 	}
 	
 	//내가 마음 누른 글 목록
 	@GetMapping("/{userId}/liked-posts")
-	public List<PostDto.Response> getLikedPosts(@PathVariable Long userId){
+	public List<PostDto.Response> getLikedPosts(@PathVariable Integer userId){
 		return userService.getLikedPosts(userId);
 	}
 }

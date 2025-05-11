@@ -17,7 +17,7 @@ public class CommentHeartService {
     private final CommentHeartRepository commentHeartRepository;
 
     @Transactional
-    public void toggleHeart(Long commentId, User user) {
+    public void toggleHeart(Integer commentId, User user) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("댓글이 존재하지 않습니다."));
 
@@ -31,14 +31,14 @@ public class CommentHeartService {
                 );
     }
 
-    public boolean hasHeart(Long commentId, User user) {
+    public boolean hasHeart(Integer commentId, User user) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("댓글이 존재하지 않습니다."));
 
         return commentHeartRepository.findByUserAndComment(user, comment).isPresent();
     }
 
-    public Long getHeartCount(Long commentId) {
+    public Long getHeartCount(Integer commentId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("댓글이 존재하지 않습니다."));
 

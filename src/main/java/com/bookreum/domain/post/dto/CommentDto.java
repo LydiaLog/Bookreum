@@ -9,21 +9,26 @@ public class CommentDto {
     @Setter
     @NoArgsConstructor
     @AllArgsConstructor
+    @Builder
     public static class Request {
-        private Long postId;
-        private Long userId;
+        private Integer postId;
+        private Integer userId;
         private String content;
     }
 
     @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
     @Builder
     public static class Response {
-        private Long id;
+        private Integer id;
         private String content;
         private String createdAt;
         private String authorName;
-        private long heartCount; // 공감 수 추가
+        private long heartCount;
 
+        // ✅ Comment 엔티티에서 Response 생성 (기본)
         public static Response fromEntity(Comment comment) {
             return Response.builder()
                     .id(comment.getId())
@@ -33,7 +38,7 @@ public class CommentDto {
                     .build();
         }
 
-        // 공감 수를 포함한 응답 생성 메소드
+        // ✅ 공감 수를 포함한 Response 생성
         public static Response fromEntityWithHeartCount(Comment comment, long heartCount) {
             return Response.builder()
                     .id(comment.getId())
