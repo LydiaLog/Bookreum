@@ -1,33 +1,27 @@
 package com.bookreum.dev.domain.user;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
-@Getter 
-@Setter 
-@NoArgsConstructor 
-@AllArgsConstructor 
-@Builder
-@Table(name = "user")
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor @Builder
+@Table(name = "users")
 public class UserEntity {
-	  @Id
-	  @GeneratedValue(strategy = GenerationType.IDENTITY)
-	  private Long id;
 
-	  @Column(unique = true)
-      private String kakaoId;
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-      private String nickname;
+    // 카카오 고유 UUID
+    @Column(unique = true, nullable = false)
+    private String kakaoId;
 
-      private String profileImage;
+    private String nickname;
+    private String profileImage;
+
+    @Column(nullable = false)
+    private boolean social;
+
+    @Column(nullable = false)
+    private boolean del;
 }
