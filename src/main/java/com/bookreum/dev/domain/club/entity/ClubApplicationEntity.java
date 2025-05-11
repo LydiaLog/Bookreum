@@ -1,9 +1,7 @@
-package com.bookreum.dev.domain.club;
+package com.bookreum.dev.domain.club.entity;
 
 import java.time.LocalDateTime;
-
 import com.bookreum.dev.domain.user.UserEntity;
-
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,17 +15,17 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @Table(name = "club_application")
-public class ClubApplication {
+public class ClubApplicationEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "club_template_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "club_id", nullable = false) // ✅ club_id 로 수정
     private ClubEntity club;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 
@@ -38,4 +36,3 @@ public class ClubApplication {
         this.appliedAt = LocalDateTime.now();
     }
 }
-

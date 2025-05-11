@@ -1,7 +1,8 @@
 // com/bookreum/dev/domain/club/ChatMessageEntity.java
-package com.bookreum.dev.domain.club;
+package com.bookreum.dev.domain.club.entity;
 
 import java.time.LocalDateTime;
+
 import com.bookreum.dev.domain.user.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;

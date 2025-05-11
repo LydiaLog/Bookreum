@@ -1,16 +1,16 @@
-package com.bookreum.dev.domain.club;
+package com.bookreum.dev.domain.club.controller;
 
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.bookreum.dev.domain.club.ClubEntity;
-import com.bookreum.dev.domain.club.ClubService;  // 실제 서비스 구현체
+
+import com.bookreum.dev.domain.club.dto.ClubDTO;
+import com.bookreum.dev.domain.club.entity.ClubEntity;
+import com.bookreum.dev.domain.club.service.ClubService;
 
 import lombok.RequiredArgsConstructor;
-
-import com.bookreum.dev.domain.club.ClubDTO;
 
 
 /**

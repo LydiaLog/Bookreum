@@ -1,5 +1,4 @@
-// com/bookreum/dev/domain/club/ClubEntity.java
-package com.bookreum.dev.domain.club;
+package com.bookreum.dev.domain.club.entity;
 
 import java.time.LocalDateTime;
 import com.bookreum.dev.domain.book.BookEntity;
@@ -18,7 +17,10 @@ public class ClubEntity {
     private String title;
     private String description;
     private int minParticipants = 2;
-    private int maxParticipants = 5;
+    
+    // ✅ 최대 참가 인원을 null 가능하도록 Integer로 수정
+    private Integer maxParticipants = 5;  // 기본값을 지정할 수도 있음
+
     private LocalDateTime applicationDeadline;
     private int activityDurationDays;
 

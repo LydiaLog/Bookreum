@@ -1,8 +1,11 @@
 // com/bookreum/dev/domain/club/dto/ClubDTO.java
-package com.bookreum.dev.domain.club;
+package com.bookreum.dev.domain.club.dto;
 
 import java.time.LocalDateTime;
-import com.bookreum.dev.domain.club.ClubStatus;
+
+import com.bookreum.dev.domain.club.entity.ClubEntity;
+import com.bookreum.dev.domain.club.entity.ClubStatus;
+
 import lombok.*;
 
 @Data

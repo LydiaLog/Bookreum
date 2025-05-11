@@ -1,9 +1,12 @@
-package com.bookreum.dev.domain.club;
+package com.bookreum.dev.domain.club.controller;
 
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import com.bookreum.dev.domain.club.entity.ChatRoomEntity;
+import com.bookreum.dev.domain.club.service.ChatRoomService;
 
 import lombok.RequiredArgsConstructor;
 

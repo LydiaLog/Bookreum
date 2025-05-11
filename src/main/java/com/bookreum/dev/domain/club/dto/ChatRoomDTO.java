@@ -1,5 +1,7 @@
 
-package com.bookreum.dev.domain.club;
+package com.bookreum.dev.domain.club.dto;
+
+import com.bookreum.dev.domain.club.entity.ChatRoomEntity;
 
 import lombok.*;
 

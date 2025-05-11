@@ -1,5 +1,5 @@
 // com/bookreum/dev/domain/club/ChatRoomEntity.java
-package com.bookreum.dev.domain.club;
+package com.bookreum.dev.domain.club.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

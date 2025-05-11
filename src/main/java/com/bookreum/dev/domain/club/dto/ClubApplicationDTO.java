@@ -1,7 +1,10 @@
 
-package com.bookreum.dev.domain.club;
+package com.bookreum.dev.domain.club.dto;
 
 import java.time.LocalDateTime;
+
+import com.bookreum.dev.domain.club.entity.ClubApplicationEntity;
+
 import lombok.*;
 
 @Data
@@ -14,7 +17,7 @@ public class ClubApplicationDTO {
     private Long userId;
     private LocalDateTime appliedAt;
 
-    public static ClubApplicationDTO fromEntity(ClubApplication e) {
+    public static ClubApplicationDTO fromEntity(ClubApplicationEntity e) {
         return ClubApplicationDTO.builder()
             .id(e.getId())
             .clubId(e.getClub().getId())
