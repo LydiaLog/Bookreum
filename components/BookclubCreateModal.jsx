@@ -54,7 +54,7 @@ function BookclubCreateModal({ onClose, onCreate }) {
         </label>
 
         <label>
-          클럽 소개&nbsp;({clubDescription.length}/100)
+          북클럽 소개&nbsp;({clubDescription.length}/100)
           <input maxLength={100} value={clubDescription} onChange={(e) => setClubDescription(e.target.value)} />
         </label>
 
