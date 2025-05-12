@@ -2,26 +2,29 @@ package com.bookreum.dev.domain.user;
 
 import jakarta.persistence.*;
 import lombok.*;
+import com.bookreum.dev.domain.post.entity.PostEntity;
+import java.util.List;
 
 @Entity
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor @Builder
-@Table(name = "users")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder(toBuilder = true) // ✅ toBuilder 추가
 public class UserEntity {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
-    // 카카오 고유 UUID
-    @Column(unique = true, nullable = false)
+    @Column(length = 100, unique = true)
     private String kakaoId;
 
+    @Column(length = 100)
     private String nickname;
+
+    @Column(length = 255)
     private String profileImage;
 
-    @Column(nullable = false)
-    private boolean social;
-
-    @Column(nullable = false)
-    private boolean del;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PostEntity> posts;
 }
