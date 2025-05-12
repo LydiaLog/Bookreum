@@ -42,7 +42,21 @@ function BookclubCard({ bookclub, onClick }) {
           }}
         />
       ) : (
-        <div style={{ width: "280px", height: "165px", background: "#ddd" }}>이미지</div>
+        <div 
+          style={{ 
+            width: "280px", 
+            height: "165px", 
+            background: "#ddd" ,
+            borderRadius: "3px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#aaa",
+            margin: "2px auto 0",
+          }}
+        >
+          이미지
+        </div>
       )}
 
       <h3 style={{ fontSize: '16px', fontWeight: 'bold', margin: '4px 0 0 0', paddingLeft: '10px' }}>{bookclub.title}</h3>
