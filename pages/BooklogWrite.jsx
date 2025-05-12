@@ -1,22 +1,28 @@
 import { useRef, useState } from 'react';
+import api from '../axiosConfig';
 import { useNavigate, useLocation } from 'react-router-dom';
 import searchbookIcon from '../assets/search_book.svg';
 import inputimageIcon from '../assets/input_image.svg';
 import BookSearchModal from '../components/BookSearchModal';
-import dummyBooklogs from '../data/dummyBooklogs';
 import '../styles/BooklogWrite.css';
 
 function BooklogWrite() {
-  /* ───── 수정 or 새 글 판단 ───── */
   const { state } = useLocation();
-  const editingLog = state?.log ?? null;      // undefined → 새 글
+  const editingLog = state?.log ?? null;
   const isEdit = Boolean(editingLog);
 
-  /* ───── 입력값 State ───── */
   const [title, setTitle] = useState(editingLog?.title || '');
   const [content, setContent] = useState(editingLog?.content || '');
+  // 선택된 책 객체 통째로 보관
   const [selectedBook, setSelectedBook] = useState(
-    editingLog ? { title: editingLog.book, author: editingLog.author } : null
+    editingLog
+      ? {            // 글 수정 시
+          title:  editingLog.bookTitle,
+          author: editingLog.bookAuthor,
+          isbn13: editingLog.bookIsbn,
+          cover:  editingLog.coverImageUrl
+        }
+      : null
   );
   const [selectedImage, setSelectedImage] = useState(null);
   const [showBookModal, setShowBookModal] = useState(false);
@@ -25,48 +31,69 @@ function BooklogWrite() {
   const navigate = useNavigate();
   const currentUser = '나';
 
-  /* ───── 이미지 선택 ───── */
+  // ✅ FormData로 서버에 전송
+  const handleSubmit = async () => {
+    if (!title.trim()) {
+      alert("제목을 입력하세요.");
+      return;
+    }
+
+    if (!content.trim()) {
+      alert("내용을 입력하세요.");
+      return;
+    }
+
+    if (!selectedBook) {
+      alert("책을 선택하세요.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("title",    title.trim());
+    formData.append("content",  content.trim());
+    formData.append("nickname", currentUser);
+    formData.append("date",     new Date().toISOString().slice(0, 10));
+
+    if (selectedBook) {
+      formData.append("bookTitle",  selectedBook.title);
+      formData.append("bookAuthor", selectedBook.author);
+      formData.append("bookIsbn",   selectedBook.isbn13);
+      formData.append("coverUrl",   selectedBook.cover);   // 백엔드가 URL로 받는다면
+      formData.append('bookId',     selectedBook.itemId);
+    }
+
+    // 별도 업로드 이미지가 있다면
+    if (selectedImage) formData.append("coverImage", selectedImage);
+
+
+    console.log("FormData Debug:", [...formData.entries()]);
+
+    try {
+      const response = await api.post('/api/posts', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      console.log('Create Response:', response.data);
+      navigate(`/booklog/${response.data.id}`);
+    } catch (error) {
+      console.error('Failed to save booklog:', error.response?.data || error.message);
+    }
+  };
+
+  // 이미지 업로드 핸들러
   const handleImageClick = () => fileInputRef.current.click();
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) setSelectedImage(file);
   };
 
-  /* ───── 제출 ───── */
-  const handleSubmit = () => {
-    if (isEdit) {
-      /* 기존 글 덮어쓰기 */
-      const idx = dummyBooklogs.findIndex((b) => b.id === editingLog.id);
-      if (idx !== -1) {
-        dummyBooklogs[idx] = {
-          ...dummyBooklogs[idx],
-          title,
-          content,
-          book: selectedBook?.title || '',
-          author: selectedBook?.author || '',
-        };
-      }
-      /* 수정 완료 → 해당 글 상세 */
-      navigate(`/booklog/${editingLog.id}`);
-    } else {
-      /* 새 글 추가 */
-      const newId = Date.now().toString();
-      dummyBooklogs.unshift({
-        id: newId,
-        title,
-        content,
-        nickname: currentUser,
-        date: new Date().toISOString().slice(0, 10),
-        coverUrl: selectedImage ? URL.createObjectURL(selectedImage) : '',
-        book: selectedBook?.title || '',
-        author: selectedBook?.author || '',
-      });
-      navigate(`/booklog/${newId}`);            // 작성 후 방금 글 상세
-    }
+  // 책 선택 핸들러
+  const handleBookSelect = (book) => {
+    setSelectedBook(book);
+    setShowBookModal(false);
   };
-
-  /* ───── 취소: 바로 이전 화면(상세)로 ───── */
-  const handleCancel = () => navigate(-1);
 
   return (
     <div>
@@ -81,57 +108,22 @@ function BooklogWrite() {
         <input
           className="write-input-title"
           type="text"
-          placeholder="제목"
+          placeholder="제목을 입력하세요."
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
 
-        {/* 책 선택 */}
-        <div
-          className="write-book-select"
-          onClick={() => setShowBookModal(true)}
-          style={{ cursor: 'pointer' }}
-        >
-          <img
-            src={searchbookIcon}
-            alt="책 검색"
-            style={{ width: 20, height: 20, marginRight: 8, verticalAlign: 'middle' }}
-          />
-          {selectedBook ? selectedBook.title : '무슨 책을 읽었나요?'}
+        <div className="write-book-select" onClick={() => setShowBookModal(true)} style={{ cursor: 'pointer' }}>
+          <img src={searchbookIcon} alt="책 검색" style={{ width: 20, height: 20, marginRight: 8, verticalAlign: 'middle' }} />
+          {selectedBook ? `${selectedBook.title} - ${selectedBook.author}` : '무슨 책을 읽었나요?'}
         </div>
 
-        {/* 이미지 첨부 */}
-        <div
-          className="write-image-upload"
-          onClick={handleImageClick}
-          style={{ cursor: 'pointer' }}
-        >
-          <img
-            src={inputimageIcon}
-            alt="이미지 첨부"
-            style={{
-              width: 25,
-              height: 25,
-              marginRight: 8,
-              verticalAlign: 'middle',
-              opacity: 0.5,
-            }}
-          />
-          {selectedImage
-            ? selectedImage.name
-            : isEdit && editingLog.coverUrl
-            ? '기존 이미지 유지'
-            : '이미지 첨부'}
-          <input
-            type="file"
-            accept="image/*"
-            ref={fileInputRef}
-            onChange={handleImageChange}
-            style={{ display: 'none' }}
-          />
+        <div className="write-image-upload" onClick={handleImageClick} style={{ cursor: 'pointer' }}>
+          <img src={inputimageIcon} alt="이미지 첨부" style={{ width: 25, height: 25, marginRight: 8, verticalAlign: 'middle', opacity: 0.5 }} />
+          {selectedImage ? selectedImage.name : '이미지 첨부'}
+          <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageChange} style={{ display: 'none' }} />
         </div>
 
-        {/* 본문 */}
         <textarea
           className="write-textarea"
           placeholder="내용을 입력하세요."
@@ -139,28 +131,22 @@ function BooklogWrite() {
           onChange={(e) => setContent(e.target.value)}
         />
 
-        {/* 버튼 */}
-        {isEdit ? (
-          <div className="write-buttons">
-            <button className="resubmit-button" onClick={handleSubmit}>
-              수정 완료
-            </button>
-            <button className="cancel-button" onClick={handleCancel}>
+        <div className="write-buttons">
+          <button className="submit-button" onClick={handleSubmit}>
+            {isEdit ? '수정 완료' : '올리기'}
+          </button>
+          {isEdit && (
+            <button className="cancel-button" onClick={() => navigate(-1)}>
               취소
             </button>
-          </div>
-        ) : (
-          <button className="submit-button" onClick={handleSubmit}>
-            올리기
-          </button>
-        )}
+          )}
+        </div>
       </div>
 
-      {/* 책 검색 모달 */}
       {showBookModal && (
         <BookSearchModal
           onClose={() => setShowBookModal(false)}
-          onSelect={(book) => setSelectedBook(book)}
+          onSelect={handleBookSelect} // ✅ 선택된 책 설정
         />
       )}
     </div>

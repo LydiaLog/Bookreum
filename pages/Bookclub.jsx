@@ -1,122 +1,160 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SearchBar from '../components/SearchBar';
 import SortDropdown from '../components/SortDropdown';
 import BookclubCard from '../components/BookclubCard';
 import Pagination from '../components/Pagination';
+import BookclubCreateModal from '../components/BookclubCreateModal';
+import BookclubJoinModal from '../components/BookclubJoinModal'; // ✅ 경로 확인
 import dummyBookclubs from '../data/dummyBookclubs';
-import BookclubCreateModal from '../components/BookclubCreateModal';   // ★ 추가
 import '../styles/Global.css';
 import '../styles/Bookclub.css';
 
 function Bookclub() {
   const navigate = useNavigate();
 
-  /* 카드 데이터 state → 더미 배열 기반 */
+  /* 카드 데이터 */
   const [clubs, setClubs] = useState(dummyBookclubs);
 
-  /* 모달 표시 여부 */
+  /* 모달 상태 */
   const [showModal, setShowModal] = useState(false);
+  const [showJoinModal, setShowJoinModal] = useState(false);
+  const [selectedClub, setSelectedClub] = useState(null);
 
-  /* 페이지네이션 */
-  const [currentPage, setCurrentPage] = useState(1);
-  const clubsPerPage = 6;
-  const indexLast = currentPage * clubsPerPage;
-  const currentClubs = clubs.slice(indexLast - clubsPerPage, indexLast);
-  const totalPages = Math.ceil(clubs.length / clubsPerPage);
+  /* 검색 입력값과 확정 검색어 분리 */
+  const [query, setQuery] = useState('');
+  const [keyword, setKeyword] = useState('');
 
-  /* 검색·정렬 (UI만, 실제 필터링은 추후 추가 가능) */
-  const [searchTerm, setSearchTerm] = useState('');
+  /* 정렬 · 페이지네이션 */
   const [sortOption, setSortOption] = useState('all');
+  const [page, setPage] = useState(1);
+  const pageSize = 6;
 
+  /* 필터/정렬/페이지 슬라이스 */
+  const { pageData, totalPages } = useMemo(() => {
+    let list = clubs.filter(c => {
+      const hay = `${c.title} ${c.book} ${c.author} ${c.nickname}`.toLowerCase();
+      return hay.includes(keyword.toLowerCase());
+    });
+
+    if (sortOption === 'open') list = list.filter(c => c.status === 'open');
+    if (sortOption === 'closed') list = list.filter(c => c.status === 'closed');
+
+    const start = (page - 1) * pageSize;
+    const slice = list.slice(start, start + pageSize);
+    return { pageData: slice, totalPages: Math.ceil(list.length / pageSize) };
+  }, [clubs, keyword, sortOption, page]);
+
+  /* 새 클럽 추가 */
+  const addClub = (club) => {
+    dummyBookclubs.unshift(club);
+    setClubs([...dummyBookclubs]);
+    setKeyword('');
+    setQuery('');
+    setPage(1);
+  };
+
+  /* 참여 모달 열기 */
+  const openJoinModal = (club) => {
+    setSelectedClub(club);
+    setShowJoinModal(true);
+  };
+
+  /* 참여하기 동작 */
+  const joinClub = () => {
+    if (!selectedClub) return;
+    navigate(`/bookclub/${selectedClub.id}`);
+    setShowJoinModal(false); // 모달 닫기
+  };
+
+  /* 정렬 옵션 */
   const sortOptions = [
     { value: 'all', label: '전체' },
     { value: 'open', label: '모집중' },
     { value: 'closed', label: '모집마감' },
   ];
 
-  /* 새 클럽 생성 */
-  const addClub = (newClub) => {
-    dummyBookclubs.unshift(newClub);
-    setClubs([...dummyBookclubs]);
-    setCurrentPage(1);                 // 첫 페이지로
+  /* 검색 확정 핸들러 */
+  const commitSearch = () => {
+    setKeyword(query.trim());
+    setPage(1);
   };
 
   return (
     <>
-      <div
-        className="page-wrapper"
-        style={{ display: 'flex', justifyContent: 'center' }}
-      >
-        {/* 제목 */}
+      <div className="page-wrapper" style={{ display: 'flex', justifyContent: 'center' }}>
         <h2 className="page-title">북클럽</h2>
         <p className="page-subtitle">책으로 이어지는 우리들의 이야기</p>
 
         <div style={{ marginLeft: '13%' }}>
-          {/* 검색/정렬/만들기 */}
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'flex-end',
-              marginTop: '20px',
-            }}
-          >
+          {/* 검색 / 정렬 / 만들기 */}
+          <div style={{
+            display: 'flex', justifyContent: 'space-between',
+            alignItems: 'flex-end', marginTop: 20
+          }}>
             <SearchBar
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              onSearch={commitSearch}
             />
 
-            <div style={{ display: 'flex', gap: '10px', marginRight: '10px' }}>
+            <div style={{ display: 'flex', gap: 10, marginRight: 10 }}>
               <SortDropdown
                 value={sortOption}
-                onChange={(e) => setSortOption(e.target.value)}
+                onChange={e => { setSortOption(e.target.value); setPage(1); }}
                 options={sortOptions}
               />
               <button
                 style={{
-                  background: '#B4C9A4',
-                  opacity: '0.8',
-                  padding: '8px 18px',
-                  fontSize: '14px',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
+                  background: '#B4C9A4', opacity: 0.8, padding: '8px 18px',
+                  fontSize: 14, border: 'none', borderRadius: 6, cursor: 'pointer'
                 }}
-                onClick={() => setShowModal(true)}   /* ★ 모달 열기 */
+                onClick={() => setShowModal(true)}
               >
                 만들기
               </button>
             </div>
           </div>
 
-          {/* 북클럽 카드 리스트 */}
+          {/* 카드 리스트 */}
           <div className="bookclublist">
-            {currentClubs.map((club) => (
+            {pageData.map(club => (
               <BookclubCard
                 key={club.id}
                 bookclub={club}
-                onClick={() => navigate(`/bookclub/${club.id}`)}
+                onClick={() => openJoinModal(club)}
               />
             ))}
+            {pageData.length === 0 && <p>검색 결과가 없습니다.</p>}
           </div>
 
           {/* 페이지네이션 */}
-          <div style={{ textAlign: 'center', marginTop: '20px' }}>
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-            />
-          </div>
+          {totalPages > 1 && (
+            <div style={{ textAlign: 'center', marginTop: 20 }}>
+              <Pagination
+                currentPage={page}
+                totalPages={totalPages}
+                onPageChange={setPage}
+              />
+            </div>
+          )}
         </div>
       </div>
 
-      {/* ─── 만들기 모달 ─── */}
+      {/* 만들기 모달 */}
       {showModal && (
         <BookclubCreateModal
           onClose={() => setShowModal(false)}
           onCreate={addClub}
+        />
+      )}
+
+      {/* 참여하기 모달 */}
+      {showJoinModal && selectedClub && (
+        <BookclubJoinModal
+          club={selectedClub}
+          onClose={() => setShowJoinModal(false)}
+          onJoin={joinClub}
         />
       )}
     </>

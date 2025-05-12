@@ -31,7 +31,7 @@ function BooklogCard({ booklog }) {
           {booklog.title}
         </h3>
         <p style={{ fontSize: "13px", color: "#666", margin: "0px", paddingLeft: "10px" }}>
-          {booklog.book} | {booklog.author}
+          {booklog.bookTitle} | {booklog.bookAuthor}
         </p>
         <p
           style={{
@@ -61,20 +61,35 @@ function BooklogCard({ booklog }) {
           <p style={{ fontSize: "12px", color: "#888" }}>{booklog.date}</p>
         </div>
       </div>
-      <div
-        style={{
-          width: "175px",
-          height: "125px",
-          background: "#ddd",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "#aaa",
-          marginTop: "3px",
-        }}
-      >
-        이미지
-      </div>
+      {booklog.coverUrl ? (
+        <img
+          src={booklog.coverUrl}
+          alt={`북로그 대표 이미지`}
+          style={{
+            width: "175px",
+            height: "125px",
+            objectFit: "cover",
+            borderRadius: "3px",
+            display: "block",
+            margin: "2px auto 0",
+          }}
+        />
+      ) : (
+        <div
+          style={{
+            width: "175px",
+            height: "125px",
+            background: "#ddd",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#aaa",
+            marginTop: "3px",
+          }}
+        >
+          이미지
+        </div>
+      )}
     </div>
   );
 }

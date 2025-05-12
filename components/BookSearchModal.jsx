@@ -1,57 +1,82 @@
 import { useState } from 'react';
+import api from '../axiosConfig';
 import '../styles/BookSearchModal.css';
 
-// 책 더미 데이터 // 추후에 책 정보 데이터 연결 예정
-const dummyBooks = [
-  { id: 1, title: '모순', author: '양귀자' },
-  { id: 2, title: '채식주의자', author: '한강' },
-  { id: 3, title: '급류', author: '정대건' },
-];
-
-function BookSearchModal({ onClose, onSelect }) {
+/**
+ * 책 검색 모달 – 알라딘 백엔드 API(/api/aladin/search) 연동 버전
+ * - keyword 파라미터로 최대 5권 반환
+ * - 선택 시 상위 컴포넌트에 AladinItem 그대로 전달
+ */
+export default function BookSearchModal({ onClose, onSelect }) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [results, setResults] = useState([]);
+  const [results, setResults]       = useState([]); // AladinItem[]
+  const [loading, setLoading]       = useState(false);
+  const [error, setError]           = useState('');
 
-  const handleSearch = () => {
-    const filtered = dummyBooks.filter((book) =>
-      book.title.includes(searchTerm)
-    );
-    setResults(filtered);
+  /**
+   * 엔터 또는 검색 버튼 → 알라딘 검색
+   */
+  const handleSearch = async () => {
+    const term = searchTerm.trim();
+    if (!term) {
+      setResults([]);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError('');
+
+      const { data } = await api.get('/api/aladin/search', {
+        params: { keyword: term },
+      });
+
+      // 백엔드 DTO: { totalResults, item: AladinItem[] }
+      setResults(data?.item ?? []);
+    } catch (err) {
+      console.error('책 검색 실패:', err);
+      setError('검색 중 오류가 발생했습니다.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="book-modal-backdrop" onClick={onClose}>
-      <div
-        className="book-modal"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="book-modal" onClick={(e) => e.stopPropagation()}>
         <h4>책 검색</h4>
 
         <div className="search-input-row">
           <input
+            className="search-input"
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handleSearch();
-            }}
-            placeholder="책 제목 입력"
-            className="search-input"
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+            placeholder="책 제목 또는 작가 이름"
           />
-          <button onClick={handleSearch} className="search-button">검색</button>
+          <button className="search-button" onClick={handleSearch} disabled={loading}>
+            {loading ? '검색 중…' : '검색'}
+          </button>
         </div>
 
-        <ul>
-          {results.map((book) => (
+        {error && <p className="search-error">{error}</p>}
+
+        <ul className="search-result-list">
+          {results.map((b) => (
             <li
-              key={book.id}
+              key={b.isbn13 || b.itemId}
+              className="search-result-item"
               onClick={() => {
-                onSelect(book);
+                onSelect(b); // 부모에게 AladinItem 전달
                 onClose();
               }}
-              className="search-result-item"
             >
-              {book.title} | {book.author}
+              {b.cover && <img src={b.cover} alt={b.title} className="result-cover" />}
+              <div className="result-text">
+                <strong>{b.title}</strong>
+                <span className="result-author">{b.author}</span>
+              </div>
             </li>
           ))}
         </ul>
@@ -59,5 +84,3 @@ function BookSearchModal({ onClose, onSelect }) {
     </div>
   );
 }
-
-export default BookSearchModal;
