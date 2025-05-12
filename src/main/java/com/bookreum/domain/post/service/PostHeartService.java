@@ -16,29 +16,43 @@ public class PostHeartService {
     private final PostHeartRepository postHeartRepository;
     private final PostRepository postRepository;
 
+    /**
+     * ✅ 공감 토글 (추가 또는 취소)
+     * @param postId 공감을 추가할 게시글 ID
+     * @param user 공감을 추가하는 사용자
+     * @return true -> 공감 추가됨, false -> 공감 취소됨
+     */
     @Transactional
     public boolean toggleHeart(Integer postId, User user) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+                .orElseThrow(() -> new IllegalArgumentException("📌 Post not found"));
 
-        return postHeartRepository.findByUserAndPost(user, post)
-                .map(existing -> {
-                    postHeartRepository.delete(existing);
-                    return false; // 공감 취소됨
-                })
-                .orElseGet(() -> {
-                    PostHeart heart = PostHeart.builder()
-                            .user(user)
-                            .post(post)
-                            .build();
-                    postHeartRepository.save(heart);
-                    return true; // 공감 추가됨
-                });
+        // ✅ 기존 공감 여부 확인
+        PostHeart existingHeart = postHeartRepository.findByUserAndPost(user, post).orElse(null);
+
+        if (existingHeart != null) {
+            // ✅ 공감 취소
+            postHeartRepository.delete(existingHeart);
+            return false;
+        }
+
+        // ✅ 공감 추가
+        PostHeart heart = PostHeart.builder()
+                .user(user)
+                .post(post)
+                .build();
+        postHeartRepository.save(heart);
+        return true;
     }
 
+    /**
+     * ✅ 특정 게시글의 공감 수 조회
+     * @param postId 공감 수를 조회할 게시글 ID
+     * @return 공감 수 (long)
+     */
+ // ✅ 특정 게시글의 공감 수 조회
     public long countHearts(Integer postId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
-        return postHeartRepository.countByPost(post);
+        return postHeartRepository.countByPost_Id(postId);
     }
+
 }
