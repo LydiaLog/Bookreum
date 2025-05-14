@@ -25,7 +25,7 @@ public class CommentDto {
         private Integer id;
         private String content;
         private String createdAt;
-        private String authorName;
+        private String nickname; // ✅ 댓글 작성자 닉네임 추가
         private long heartCount;
 
         // ✅ Comment 엔티티에서 Response 생성 (기본)
@@ -34,7 +34,8 @@ public class CommentDto {
                     .id(comment.getId())
                     .content(comment.getContent())
                     .createdAt(comment.getCreatedAt().toString())
-                    .authorName(comment.getUser().getNickname())
+                    .nickname(comment.getUser() != null ? comment.getUser().getNickname() : "Unknown") // ✅ 닉네임 안전하게 처리
+                    .heartCount(0)
                     .build();
         }
 
@@ -44,7 +45,7 @@ public class CommentDto {
                     .id(comment.getId())
                     .content(comment.getContent())
                     .createdAt(comment.getCreatedAt().toString())
-                    .authorName(comment.getUser().getNickname())
+                    .nickname(comment.getUser() != null ? comment.getUser().getNickname() : "Unknown") // ✅ 닉네임 안전하게 처리
                     .heartCount(heartCount)
                     .build();
         }

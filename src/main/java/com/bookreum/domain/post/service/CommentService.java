@@ -34,9 +34,14 @@ public class CommentService {
     }
 
     // 댓글 조회 (소유자 여부에 따른 통계 노출)
+    // CommentService에서 댓글 조회 로직
+ // CommentService
     public List<CommentDto.Response> getCommentsByPost(Integer postId, boolean isOwner) {
         return commentRepository.findByPostId(postId).stream()
                 .map(comment -> {
+                    String nickname = comment.getUser() != null ? comment.getUser().getNickname() : "Unknown";
+                    System.out.println("📌 댓글 작성자 닉네임: " + nickname);
+
                     long heartCount = isOwner ? commentHeartRepository.countByComment(comment) : 0;
                     return CommentDto.Response.fromEntityWithHeartCount(comment, heartCount);
                 })
