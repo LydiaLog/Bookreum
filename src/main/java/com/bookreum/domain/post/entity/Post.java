@@ -42,7 +42,25 @@ public class Post {
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PostHeart> postHearts = new ArrayList<>();
-
+    
+    //✅ 공감 수 필드 추가
+    @Column(name = "heart_count", nullable = false)
+    @Builder.Default
+    private long heartCount = 0L;
+    
+    //✅ 공감 수 증가
+    public void incrementHeartCount() {
+    	this.heartCount++;
+    }
+    
+    //✅ 공감 수 감소
+    public void decrementHeartCount() {
+    	if(this.heartCount > 0) {
+    		this.heartCount--;
+    	}
+    }
+    
+    //✅ 생성 시간 설정
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
@@ -64,11 +82,13 @@ public class Post {
     public void addHeart(PostHeart postHeart) {
         this.postHearts.add(postHeart);
         postHeart.setPost(this);
+        incrementHeartCount();
     }
 
     // ✅ PostHeart 삭제
     public void removeHeart(PostHeart postHeart) {
         this.postHearts.remove(postHeart);
         postHeart.setPost(null);
+        decrementHeartCount();
     }
 }

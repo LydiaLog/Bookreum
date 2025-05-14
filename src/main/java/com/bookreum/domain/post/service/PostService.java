@@ -17,22 +17,26 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Service
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*") 
 public class PostService {
 
     private final PostRepository postRepository;
     private final BookRepository bookRepository;
     private final AladinBookService aladinBookService;
+    private static final String UPLOAD_DIR = "D:/uploads/";
 
     // ✅ 파일 업로드 경로 설정 (application.properties에서 설정)
     @Value("${spring.servlet.multipart.location}")
@@ -50,6 +54,7 @@ public class PostService {
                 .imageUrl(uploadedImageUrl)
                 .user(user)
                 .book(book)
+                .heartCount(0L)
                 .build();
         Post savedPost = postRepository.save(post);
         return PostDto.Response.fromEntity(savedPost, user, 0L, 0L);
@@ -72,22 +77,31 @@ public class PostService {
     }
 
     /**
-     * ✅ 이미지 저장 (경로 유연성 개선)
+     * ✅ 이미지 저장 (서버 외부 경로 및 CORS 허용)
      */
     private String saveImage(MultipartFile image) {
         if (image == null || image.isEmpty()) return null;
+
         try {
-            Path directory = Paths.get(uploadDir).toAbsolutePath().normalize();
+            // 저장 디렉토리 생성 (서버 외부 경로)
+            Path directory = Paths.get(UPLOAD_DIR).toAbsolutePath().normalize();
             Files.createDirectories(directory);
 
-            String fileName = image.getOriginalFilename();
-            Path filePath = directory.resolve(fileName);
+            // 파일 이름 생성 (UUID 기반, 원본 확장자 유지)
+            String originalFileName = image.getOriginalFilename();
+            String extension = originalFileName.substring(originalFileName.lastIndexOf('.'));
+            String uniqueFileName = UUID.randomUUID().toString() + extension;
+
+            // 파일 저장 경로 설정
+            Path filePath = directory.resolve(uniqueFileName);
             image.transferTo(filePath.toFile());
 
             System.out.println("✅ 이미지 저장 경로: " + filePath.toString());
-            return "/uploads/" + fileName;
+            // 상대 경로 반환 (프론트에서 접근 가능)
+            return "http://10.50.234.11/uploads/" + uniqueFileName;
+
         } catch (IOException e) {
-            throw new RuntimeException("Failed to save image", e);
+            throw new RuntimeException("이미지 저장에 실패했습니다: " + e.getMessage(), e);
         }
     }
 
@@ -166,15 +180,29 @@ public class PostService {
     /**
      * ✅ 게시글 상세 조회 (postId 기반)
      */
-    public PostDto.DetailResponse getPostDetail(Integer postId, User viewer) {
+    public PostDto.DetailResponse getPostDetail(Integer postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, 
                         "Post with ID " + postId + " does not exist in the database."
                 ));
-        System.out.println("📌 Retrieved Post: " + post); // 로그로 조회된 게시글 확인
-        return PostDto.DetailResponse.fromEntity(post, null, 0L, viewer);
+
+        System.out.println("📌 Retrieved Post: " + post);
+
+        // 📌 PostDto.DetailResponse 생성
+        return PostDto.DetailResponse.builder()
+                .id(post.getId())
+                .title(post.getTitle())
+                .content(post.getContent())
+                .imageUrl(post.getImageUrl())
+                .nickname(post.getUser() != null ? post.getUser().getNickname() : "Unknown User") // ✅ 작성자 닉네임
+                .date(post.getCreatedAt() != null ? post.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : "Unknown Date") // ✅ 작성일
+                .bookTitle(post.getBook() != null ? post.getBook().getTitle() : "Unknown Book Title") // ✅ 책 제목
+                .bookAuthor(post.getBook() != null ? post.getBook().getAuthor() : "Unknown Author") // ✅ 책 저자
+                .CoverUrl(post.getBook() != null ? post.getBook().getCoverImageUrl() : null) // ✅ 책 이미지 URL
+                .build();
     }
+
 
     /**
      * ✅ 내가 작성한 글인지 확인

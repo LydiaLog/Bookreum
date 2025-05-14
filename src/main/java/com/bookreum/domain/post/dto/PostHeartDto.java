@@ -9,7 +9,6 @@ public class PostHeartDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class Request {
-        private Long userId;
         private Long postId;
     }
 
@@ -20,5 +19,6 @@ public class PostHeartDto {
         private Long userId;
         private Long postId;
         private String createdAt;
+        private boolean isLiked;
     }
 }

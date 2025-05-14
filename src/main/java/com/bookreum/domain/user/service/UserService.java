@@ -25,7 +25,7 @@ public class UserService {
                 .orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
         return postRepository.findByUserOrderByCreatedAtDesc(user).stream()
                 .map(post -> {
-                    long heartCount = postHeartRepository.countByPost_Id(post.getId());
+                    long heartCount = postHeartRepository.countByPostId(post.getId());
                     long commentCount = 0L; // 댓글 수는 여기서 계산 안 함 (필요시 주입)
                     return PostDto.Response.fromEntity(post, user, heartCount, commentCount);
                 })

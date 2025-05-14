@@ -81,12 +81,12 @@ public class PostDto {
         private String title;
         private String content;
         private String imageUrl;
-        private String authorName;
+        private String nickname;
         private String bookTitle;
         private String bookAuthor;
-        private String bookCoverImageUrl;
-        private Integer bookId; // 📌 Book ID 추가
-        private String createdAt;
+        private String CoverUrl;
+        private Integer bookId; 
+        private String date;
         private Long heartCount;
         private List<CommentDto.Response> comments;
 
@@ -101,12 +101,12 @@ public class PostDto {
                     .title(post.getTitle())
                     .content(post.getContent())
                     .imageUrl(post.getImageUrl())
-                    .authorName(post.getUser().getNickname())
+                    .nickname(post.getUser().getNickname())
                     .bookTitle(post.getBook() != null ? post.getBook().getTitle() : "Unknown Book Title")
                     .bookAuthor(post.getBook() != null ? post.getBook().getAuthor() : "Unknown Author")
-                    .bookCoverImageUrl(post.getBook() != null ? post.getBook().getCoverImageUrl() : null)
+                    .CoverUrl(post.getBook() != null ? post.getBook().getCoverImageUrl() : null)
                     .bookId(post.getBook() != null ? post.getBook().getId() : null)
-                    .createdAt(post.getCreatedAt().format(formatter)) // 시간까지 포함된 형식으로
+                    .date(post.getCreatedAt().format(formatter)) // 시간까지 포함된 형식으로
                     .heartCount(heartCount)
                     .comments(comments)
                     .build();

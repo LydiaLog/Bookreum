@@ -11,6 +11,12 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+@Table(
+    name = "PostHeart",
+    uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"user_id", "post_id"})
+    }
+)
 public class PostHeart {
 
     @Id

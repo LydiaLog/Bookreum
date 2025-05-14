@@ -59,7 +59,6 @@ public class PostController {
     @PostMapping("/saveBook")
     @Transactional
     public ResponseEntity<Book> saveSelectedBook(@RequestBody AladinItem selectedItem) {
-        // 이미 저장된 책이 있는지 확인
         Book existingBook = bookRepository.findByTitleAndAuthor(
                 selectedItem.getTitle(), selectedItem.getAuthor()
         ).orElse(null);
@@ -75,19 +74,11 @@ public class PostController {
                 .author(selectedItem.getAuthor())
                 .coverImageUrl(selectedItem.getCover())
                 .build();
-
-        Book savedBook = bookRepository.save(newBook);
-        return ResponseEntity.ok(savedBook);
+        return ResponseEntity.ok(bookRepository.save(newBook));
     }
 
     /**
      * 📌 게시글 생성 (사용자가 선택한 책 ID 사용)
-     * @param title 게시글 제목
-     * @param content 게시글 내용
-     * @param bookId 선택한 책 ID
-     * @param coverUrl 기본 커버 이미지 URL (선택)
-     * @param coverImage 사용자 업로드 이미지 (선택)
-     * @return 생성된 게시글 응답 (PostDto.Response)
      */
     @PostMapping
     @Transactional
@@ -98,9 +89,6 @@ public class PostController {
             @RequestParam(value = "coverUrl", required = false) String coverUrl,
             @RequestPart(value = "coverImage", required = false) MultipartFile coverImage) {
         System.out.println("📌 createPost 호출됨");
-        System.out.println("📌 title: " + title);
-        System.out.println("📌 content: " + content);
-        System.out.println("📌 bookId: " + bookId);
 
         // 임시 사용자 (테스트용)
         User user = User.builder().id(1).nickname("테스터").build();
@@ -109,7 +97,7 @@ public class PostController {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Book with ID " + bookId + " not found"));
 
-        // 최종 커버 이미지 URL 결정 (사용자 이미지 > 기본 URL > 책 이미지)
+        // 최종 커버 이미지 URL 결정
         String finalCoverImageUrl = postService.determineCoverImageUrl(coverImage, coverUrl, book);
         
         // 게시글 생성 및 저장
@@ -118,16 +106,10 @@ public class PostController {
 
     /**
      * 📌 게시글 수정
-     * @param id 수정할 게시글 ID
-     * @param title 수정할 제목 (선택)
-     * @param content 수정할 내용 (선택)
-     * @param bookId 수정할 책 ID (선택)
-     * @param image 수정할 이미지 (선택)
-     * @return 수정된 게시글 응답 (200 OK)
      */
     @PutMapping("/{id}")
     public ResponseEntity<Void> updatePost(
-            @PathVariable Integer id,
+            @PathVariable("id") Integer id,
             @RequestParam(required = false) String title,
             @RequestParam(required = false) String content,
             @RequestParam(required = false) Integer bookId,
@@ -136,27 +118,20 @@ public class PostController {
         return ResponseEntity.ok().build();
     }
 
-
     /**
      * 📌 게시글 상세 조회
-     * @param id 게시글 ID
-     * @return 상세 게시글 응답
      */
     @GetMapping("/{id}")
     public ResponseEntity<PostDto.DetailResponse> getPostById(@PathVariable("id") Integer id) {
         System.out.println("📌 Requested Post ID: " + id);
-        User user = User.builder().id(1).nickname("테스터").build();
-        return ResponseEntity.ok(postService.getPostDetail(id, user));
+        return ResponseEntity.ok(postService.getPostDetail(id));
     }
-
 
     /**
      * 📌 게시글 삭제
-     * @param id 삭제할 게시글 ID
-     * @return 상태 코드 204 (No Content)
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePost(@PathVariable Integer id) {
+    public ResponseEntity<Void> deletePost(@PathVariable("id") Integer id) {
         postService.deletePost(id);
         return ResponseEntity.noContent().build();
     }
