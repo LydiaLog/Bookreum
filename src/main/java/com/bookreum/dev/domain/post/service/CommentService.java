@@ -35,12 +35,14 @@ public class CommentService {
 
     // 댓글 조회 (소유자 여부에 따른 통계 노출)
     public List<CommentDto.Response> getCommentsByPost(Integer postId, boolean isOwner) {
-        return commentRepository.findByPostId(postId).stream()
-                .map(comment -> {
-                    long heartCount = isOwner ? commentHeartRepository.countByComment(comment) : 0;
-                    return CommentDto.Response.fromEntityWithHeartCount(comment, heartCount);
-                })
-                .collect(Collectors.toList());
+        return commentRepository.findByPostIdOrderByCreatedAtDesc(postId).stream()
+            .map(comment -> {
+                long heartCount = isOwner
+                    ? commentHeartRepository.countByCommentId(comment.getId())
+                    : 0L;
+                return CommentDto.Response.fromEntityWithHeartCount(comment, heartCount);
+            })
+            .collect(Collectors.toList());
     }
 
     @Transactional

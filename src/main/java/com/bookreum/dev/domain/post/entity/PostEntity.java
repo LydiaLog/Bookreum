@@ -13,7 +13,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Builder
+@Builder(toBuilder = true)
 public class PostEntity {
 
     @Id
@@ -41,6 +41,7 @@ public class PostEntity {
     private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<PostHeart> postHearts = new ArrayList<>();
 
     @PrePersist
@@ -48,27 +49,32 @@ public class PostEntity {
         this.createdAt = LocalDateTime.now();
     }
 
-    // ✅ updateBook 메소드 추가
+    /** 연관관계 편의 메서드: 사용자 설정 */
+    public void setUser(UserEntity user) {
+        this.user = user;
+    }
+
+    /** 연관관계 편의 메서드: 책 변경 */
     public void updateBook(BookEntity book) {
         this.book = book;
     }
 
-    // ✅ update 메소드로 일반 수정
+    /** 게시글 내용 수정 */
     public void update(String title, String content, String imageUrl) {
         this.title = title;
         this.content = content;
         this.imageUrl = imageUrl;
     }
 
-    // ✅ PostHeart 추가
-    public void addHeart(PostHeart postHeart) {
-        this.postHearts.add(postHeart);
-        postHeart.setPost(this);
+    /** 좋아요 추가 */
+    public void addHeart(PostHeart heart) {
+        postHearts.add(heart);
+        heart.setPost(this);
     }
 
-    // ✅ PostHeart 삭제
-    public void removeHeart(PostHeart postHeart) {
-        this.postHearts.remove(postHeart);
-        postHeart.setPost(null);
+    /** 좋아요 제거 */
+    public void removeHeart(PostHeart heart) {
+        postHearts.remove(heart);
+        heart.setPost(null);
     }
 }

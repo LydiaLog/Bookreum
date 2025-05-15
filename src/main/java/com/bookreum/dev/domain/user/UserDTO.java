@@ -12,8 +12,9 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class UserDTO {
-    private String kakaoId;
-    private String nickname;
-    private String profileImage;
+	private Integer id;             // DB 식별자
+    private String kakaoId;         // 카카오 ID
+    private String nickname;        // 닉네임
+    private String profileImage;    // 프로필 이미지 URL
 }
 

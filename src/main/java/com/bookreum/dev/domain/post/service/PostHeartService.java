@@ -52,7 +52,7 @@ public class PostHeartService {
      */
  // ✅ 특정 게시글의 공감 수 조회
     public long countHearts(Integer postId) {
-        return postHeartRepository.countByPost_Id(postId);
+        return postHeartRepository.countByPostId(postId);
     }
 
 }

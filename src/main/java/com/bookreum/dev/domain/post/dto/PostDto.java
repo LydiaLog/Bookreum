@@ -8,17 +8,24 @@ import java.util.List;
 
 public class PostDto {
 
+    /**
+     * 게시글 생성/수정을 위한 Request DTO
+     */
     @Getter
     @Setter
     @NoArgsConstructor
     @AllArgsConstructor
+    @Builder
     public static class Request {
         private String title;
         private String content;
         private String imageUrl;
-        private Integer bookId; // 📌 Book ID 추가
+        private Integer bookId; 
     }
 
+    /**
+     * 게시글 목록 및 일반 응답용 Response DTO
+     */
     @Getter
     @Builder
     @AllArgsConstructor
@@ -31,15 +38,24 @@ public class PostDto {
         private String bookTitle;
         private String bookAuthor;
         private String bookCoverImageUrl;
-        private Integer bookId; // 📌 Book ID 추가
+        private Integer bookId; 
         private String createdAt;
         private Long heartCount;
         private Long commentCount;
 
         /**
-         * 📌 Post 엔티티로부터 Response 생성
+         * PostEntity로부터 Response 생성
+         * @param post 조회된 PostEntity
+         * @param viewer 현재 조회자 (authorName 용도)
+         * @param heartCount 좋아요 수
+         * @param commentCount 댓글 수
          */
-        public static Response fromEntity(PostEntity post, UserEntity viewer, Long heartCount, Long commentCount) {
+        public static Response fromEntity(
+                PostEntity post,
+                UserEntity viewer,
+                Long heartCount,
+                Long commentCount
+        ) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             return Response.builder()
                     .id(post.getId())
@@ -50,30 +66,17 @@ public class PostDto {
                     .bookTitle(post.getBook().getTitle())
                     .bookAuthor(post.getBook().getAuthor())
                     .bookCoverImageUrl(post.getBook().getCoverImageUrl())
-                    .bookId(post.getBook().getId()) // 📌 Book ID 추가
+                    .bookId(post.getBook().getId())
                     .createdAt(post.getCreatedAt().format(formatter))
                     .heartCount(heartCount != null ? heartCount : 0L)
                     .commentCount(commentCount != null ? commentCount : 0L)
                     .build();
         }
-
-        /**
-         * 📌 SimpleResponse 생성 (카드 형식)
-         */
-        public static SimpleResponse toSimpleResponse(Response response) {
-            return SimpleResponse.builder()
-                    .id(response.getId())
-                    .title(response.getTitle())
-                    .content(response.getContent().length() > 140 ? response.getContent().substring(0, 140) + "…" : response.getContent())
-                    .date(response.getCreatedAt())
-                    .bookTitle(response.getBookTitle())
-                    .bookAuthor(response.getBookAuthor())
-                    .coverUrl(response.getBookCoverImageUrl())
-                    .nickname(response.getAuthorName())
-                    .build();
-        }
     }
 
+    /**
+     * 게시글 상세 조회용 DetailResponse DTO
+     */
     @Getter
     @Builder
     public static class DetailResponse {
@@ -85,34 +88,38 @@ public class PostDto {
         private String bookTitle;
         private String bookAuthor;
         private String bookCoverImageUrl;
-        private Integer bookId; // 📌 Book ID 추가
+        private Integer bookId; 
         private String createdAt;
         private Long heartCount;
         private List<CommentDto.Response> comments;
 
         /**
-         * 📌 Post 엔티티로부터 DetailResponse 생성
+         * PostEntity와 댓글 목록, 좋아요 수로부터 DetailResponse 생성
          */
-        public static DetailResponse fromEntity(PostEntity post, List<CommentDto.Response> comments, long heartCount, UserEntity viewer) {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            
-            return DetailResponse.builder()
+        public static DetailResponse fromEntity(
+                PostEntity post, List<CommentDto.Response> comments, long heartCount, UserEntity viewer
+            ) {
+                DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                return DetailResponse.builder()
                     .id(post.getId())
                     .title(post.getTitle())
                     .content(post.getContent())
                     .imageUrl(post.getImageUrl())
                     .authorName(post.getUser().getNickname())
-                    .bookTitle(post.getBook() != null ? post.getBook().getTitle() : "Unknown Book Title")
-                    .bookAuthor(post.getBook() != null ? post.getBook().getAuthor() : "Unknown Author")
+                    .bookTitle(post.getBook() != null ? post.getBook().getTitle() : "")
+                    .bookAuthor(post.getBook() != null ? post.getBook().getAuthor() : "")
                     .bookCoverImageUrl(post.getBook() != null ? post.getBook().getCoverImageUrl() : null)
                     .bookId(post.getBook() != null ? post.getBook().getId() : null)
-                    .createdAt(post.getCreatedAt().format(formatter)) // 시간까지 포함된 형식으로
+                    .createdAt(post.getCreatedAt().format(fmt))
                     .heartCount(heartCount)
                     .comments(comments)
                     .build();
-        }
-   }
+            }
+    }
 
+    /**
+     * 카드 형식으로 요약된 간략 정보 제공 DTO
+     */
     @Getter
     @Builder
     public static class SimpleResponse {

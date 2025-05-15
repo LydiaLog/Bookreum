@@ -17,7 +17,8 @@ public interface CommentHeartRepository extends JpaRepository<CommentHeart, Inte
     List<CommentHeart> findAllByComment(CommentEntity comment);
 
     // 댓글 ID로 공감 수 세기
-    Long countByComment(CommentEntity comment);
+    long countByCommentId(Integer commentId);
+
 
     // 특정 댓글의 모든 공감 삭제 (댓글 삭제 시 cascade 안 쓴 경우 유용)
     void deleteAllByComment(CommentEntity comment);

@@ -42,6 +42,6 @@ public class CommentHeartService {
         CommentEntity comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("댓글이 존재하지 않습니다."));
 
-        return commentHeartRepository.countByComment(comment);
+        return commentHeartRepository.countByCommentId(commentId);
     }
 }
