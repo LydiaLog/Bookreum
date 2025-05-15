@@ -2,13 +2,15 @@ package com.bookreum.dev.domain.security;
 
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Map;
 
+/**
+ * OAuth2 로그인 콜백 엔드포인트
+ * 카카오 로그인 성공 후 호출되어 JWT를 생성해 반환합니다.
+ */
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -16,9 +18,16 @@ public class AuthController {
 
     private final JwtTokenProvider jwtTokenProvider;
 
+    /**
+     * 카카오 로그인 콜백
+     * (application.yml 에 설정된 redirect-uri 와 맞춰주셔야 합니다)
+     *
+     * @param authentication OAuth2AuthenticationToken 에 담긴 카카오 유저 정보
+     * @return JWT 토큰 문자열 (Bearer 없이 순수 토큰)
+     */
     @GetMapping("/kakao/callback")
     public String kakaoLogin(OAuth2AuthenticationToken authentication) {
-        // 인증된 OAuth2User에서 카카오 고유 ID, 닉네임, 프로필 이미지 추출
+        // 1) OAuth2User 에서 attributes 추출
         DefaultOAuth2User principal = (DefaultOAuth2User) authentication.getPrincipal();
         String kakaoId = principal.getAttribute("id").toString();
 
@@ -27,7 +36,7 @@ public class AuthController {
         String nickname     = (String) props.get("nickname");
         String profileImage = (String) props.get("profile_image");
 
-        // JWT 토큰 생성 (kakaoId, nickname, profileImage 포함)
+        // 2) JWT 생성
         return jwtTokenProvider.createToken(kakaoId, nickname, profileImage);
     }
 }

@@ -38,6 +38,20 @@ public class UserEntity {
      */
     @Column(length = 255)
     private String profileImage;
+    
+    // 모든 사용자가 소셜 가입
+    @Builder.Default
+    private boolean social = true;
+
+  
+    /**
+     * 카카오 프로필 변경 시 닉네임·이미지를 동기화한다.
+     */
+    public void updateProfile(String nickname, String profileImage) {
+        this.nickname     = nickname;
+        this.profileImage = profileImage;
+    }
+
 
     /**
      * 사용자가 작성한 게시글 목록

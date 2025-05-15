@@ -2,7 +2,11 @@ package com.bookreum.dev.domain.club.repository;
 
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import com.bookreum.dev.domain.club.entity.ChatRoomEntity;
 import com.bookreum.dev.domain.club.entity.ClubApplicationEntity;
 import com.bookreum.dev.domain.club.entity.ClubEntity;
 import com.bookreum.dev.domain.user.UserEntity;
@@ -45,4 +49,15 @@ public interface ClubApplicationRepository extends JpaRepository<ClubApplication
      * @return 신청자 수
      */
     long countByClub(ClubEntity club);
+    
+    List<ClubApplicationEntity> findByUser(UserEntity user);
+
+ // 내가 신청한 모임 목록
+ @Query("""
+    SELECT cr FROM ChatRoomEntity cr
+    JOIN cr.club c
+    JOIN ClubApplicationEntity a ON a.club = c
+    WHERE a.user = :user
+ """)
+ List<ChatRoomEntity> findRoomsByUser(@Param("user") UserEntity user);
 }
