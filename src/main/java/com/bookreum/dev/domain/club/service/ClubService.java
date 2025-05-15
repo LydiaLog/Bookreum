@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 /**
- * ✅ 클럽 관련 비즈니스 로직 처리 서비스
+ * 북클럽(모임) 기본 CRUD 및 조회 처리를 담당하는 서비스 레이어
  */
 @Service
 @RequiredArgsConstructor
@@ -18,7 +18,9 @@ public class ClubService {
     private final ClubRepository clubRepository;
 
     /**
-     * ✅ 클럽 생성
+     * 새로운 클럽(모임)을 생성하고 저장합니다.
+     * @param club 생성할 모임 엔티티 정보
+     * @return 저장된 ClubEntity
      */
     @Transactional
     public ClubEntity createClub(ClubEntity club) {
@@ -26,14 +28,19 @@ public class ClubService {
     }
 
     /**
-     * ✅ 클럽 수정 (ID로 기존 클럽 찾아 업데이트)
+     * 기존 클럽 정보를 업데이트합니다.
+     * @param clubId 수정할 모임 ID
+     * @param changes 수정할 필드가 담긴 ClubEntity (제목, 설명 등)
+     * @return 업데이트된 ClubEntity
+     * @throws IllegalArgumentException 존재하지 않는 ID인 경우
      */
     @Transactional
-    public ClubEntity updateClub(Long clubId, ClubEntity changes) {
+    public ClubEntity updateClub(Integer clubId, ClubEntity changes) {
+        // 1) 기존 클럽 조회
         ClubEntity existingClub = clubRepository.findById(clubId)
             .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 클럽 ID: " + clubId));
 
-        // ✅ 기존 클럽 정보 수정
+        // 2) 필드별 값 덮어쓰기
         existingClub.setTitle(changes.getTitle());
         existingClub.setDescription(changes.getDescription());
         existingClub.setMinParticipants(changes.getMinParticipants());
@@ -42,28 +49,34 @@ public class ClubService {
         existingClub.setActivityDurationDays(changes.getActivityDurationDays());
         existingClub.setStatus(changes.getStatus());
 
+        // 3) 변경 후 저장
         return clubRepository.save(existingClub);
     }
 
     /**
-     * ✅ 클럽 삭제
+     * 클럽을 삭제합니다.
+     * @param clubId 삭제할 모임 ID
      */
     @Transactional
-    public void deleteClub(Long clubId) {
+    public void deleteClub(Integer clubId) {
         clubRepository.deleteById(clubId);
     }
 
     /**
-     * ✅ 클럽 조회 (ID로)
+     * 단일 클럽 조회 (읽기 전용)
+     * @param clubId 조회할 모임 ID
+     * @return ClubEntity
+     * @throws IllegalArgumentException 존재하지 않는 ID인 경우
      */
     @Transactional(readOnly = true)
-    public ClubEntity getClub(Long clubId) {
+    public ClubEntity getClub(Integer clubId) {
         return clubRepository.findById(clubId)
             .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 클럽 ID: " + clubId));
     }
 
     /**
-     * ✅ 모든 클럽 목록 조회
+     * 모든 클럽 목록을 조회합니다.
+     * @return ClubEntity 리스트
      */
     @Transactional(readOnly = true)
     public List<ClubEntity> listClubs() {

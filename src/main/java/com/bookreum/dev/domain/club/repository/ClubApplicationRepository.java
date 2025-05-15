@@ -11,35 +11,38 @@ import com.bookreum.dev.domain.user.UserEntity;
  * ✅ ClubApplication CRUD 및 커스텀 쿼리 인터페이스
  */
 @Repository
-public interface ClubApplicationRepository extends JpaRepository<ClubApplicationEntity, Long> {
+public interface ClubApplicationRepository extends JpaRepository<ClubApplicationEntity, Integer> {
 
     /**
-     * ✅ 특정 사용자가 특정 클럽에 신청했는지 여부 확인
-     * @param club 클럽 (모임)
-     * @param user 사용자
-     * @return boolean 신청 여부
+     * 주어진 클럽과 사용자의 신청 여부를 확인합니다.
+     *
+     * @param club 모임 엔티티
+     * @param user 사용자 엔티티
+     * @return 신청이 존재하면 true, 아니면 false
      */
     boolean existsByClubAndUser(ClubEntity club, UserEntity user);
-    
+
     /**
-     * ✅ 특정 사용자의 특정 클럽 신청 내역 삭제
-     * @param club 클럽 (모임)
-     * @param user 사용자
+     * 주어진 클럽과 사용자의 신청 정보를 삭제합니다.
+     *
+     * @param club 모임 엔티티
+     * @param user 사용자 엔티티
      */
     void deleteByClubAndUser(ClubEntity club, UserEntity user);
 
     /**
-     * ✅ 특정 클럽에 대한 모든 신청 내역 조회
-     * @param club 클럽 (모임)
-     * @return List<ClubApplicationEntity> 신청 목록
+     * 특정 클럽에 신청한 모든 신청 정보를 반환합니다.
+     *
+     * @param club 모임 엔티티
+     * @return 신청 엔티티 리스트
      */
     List<ClubApplicationEntity> findByClub(ClubEntity club);
 
     /**
-     * ✅ 특정 클럽의 총 신청자 수 조회
-     * - 최대 참가 인원 확인에 사용
-     * @param club 클럽 (모임)
-     * @return long 현재 신청된 사용자 수
+     * 특정 클럽에 신청한 사용자 수를 반환합니다.
+     *
+     * @param club 모임 엔티티
+     * @return 신청자 수
      */
     long countByClub(ClubEntity club);
 }

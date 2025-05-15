@@ -6,33 +6,37 @@ import jakarta.persistence.*;
 import lombok.*;
 
 /**
- * 사용자의 북클럽 신청 정보를 저장하는 엔티티
+ * 북클럽 신청 정보 엔티티
  */
 @Entity
-@Getter
-@Setter
-@NoArgsConstructor
+@Table(
+    name = "club_application",
+    uniqueConstraints = @UniqueConstraint(columnNames = {"club_id", "user_id"})
+)
+@Getter @Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Builder
-@Table(name = "club_application")
+@Builder(toBuilder = true)
 public class ClubApplicationEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "club_id", nullable = false) // ✅ club_id 로 수정
+    @JoinColumn(name = "club_id", nullable = false)
     private ClubEntity club;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 
+    @Column(name = "applied_at", nullable = false, updatable = false)
     private LocalDateTime appliedAt;
 
     @PrePersist
-    protected void onCreate() {
+    private void onCreate() {
         this.appliedAt = LocalDateTime.now();
     }
 }
+

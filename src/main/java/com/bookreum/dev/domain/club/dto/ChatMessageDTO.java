@@ -12,13 +12,13 @@ import jakarta.validation.constraints.NotNull;
 @AllArgsConstructor
 public class ChatMessageDTO {
     
-    private Long id;
+    private Integer id;
 
     @NotNull(message = "ChatRoom ID cannot be null")
-    private Long chatRoomId;
+    private Integer chatRoomId;
 
     @NotNull(message = "User ID cannot be null")
-    private Long userId;
+    private Integer userId;
 
     @NotBlank(message = "Message content cannot be empty")
     private String content;
