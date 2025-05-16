@@ -32,11 +32,22 @@ public class PostController {
 
 
     /**
-     * 게시글 목록 (페이징 지원, 최신 순)
+     * 게시글 목록 조회 or 검색 (페이징 지원, 최신 순)
      */
     @GetMapping
-    public ResponseEntity<Page<PostDto.Response>> getPosts(Pageable pageable) {
-        Page<PostDto.Response> page = postService.getLatestPosts(pageable);
+    public ResponseEntity<Page<PostDto.Response>> getPosts(
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "sort", defaultValue = "latest") String sort,
+            Pageable pageable
+    ) {
+        Page<PostDto.Response> page;
+        if (keyword == null || keyword.isBlank()) {
+            // 전체 목록 (최신순)
+            page = postService.getLatestPosts(pageable);
+        } else {
+            // 검색 결과
+            page = postService.searchPosts(keyword, sort, pageable);
+        }
         return ResponseEntity.ok(page);
     }
 

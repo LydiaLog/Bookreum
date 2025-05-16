@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# recommender/content_based.py
+
 import sys
 import os
 import pandas as pd
@@ -6,44 +9,53 @@ import faiss
 import numpy as np
 
 def load_data():
-    # 스크립트 폴더 기준으로 data/books.csv 로드
     base = os.path.dirname(os.path.abspath(__file__))
     data_path = os.path.normpath(os.path.join(base, "../data/books.csv"))
     if not os.path.exists(data_path):
         print(f"Error: books.csv not found at {data_path}", file=sys.stderr)
         sys.exit(1)
-    return pd.read_csv(data_path, dtype=str)
+
+    df = pd.read_csv(data_path, dtype=str)
+    # book_id 또는 isbn13 컬럼을 내부 book_id로 통일
+    if 'book_id' in df.columns:
+        pass
+    elif 'isbn13' in df.columns:
+        df = df.rename(columns={'isbn13': 'book_id'})
+    else:
+        print("Error: 'book_id' 또는 'isbn13' 컬럼이 없습니다.", file=sys.stderr)
+        sys.exit(1)
+
+    if 'description' not in df.columns:
+        print("Error: 'description' 컬럼이 없습니다.", file=sys.stderr)
+        sys.exit(1)
+
+    return df
 
 def build_index(descriptions):
-    # 임베딩 모델 로드
     model = SentenceTransformer('all-MiniLM-L6-v2')
-    # 코사인 유사도 대응(normalize_embeddings=True)
     embeddings = model.encode(
         descriptions.tolist(),
         normalize_embeddings=True,
         convert_to_numpy=True
     )
-    # FAISS 인덱스 생성 (Inner-Product 사용하면 벡터가 정규화된 코사인 유사도와 동일)
     dim = embeddings.shape[1]
-    idx = faiss.IndexFlatIP(dim)
-    idx.add(embeddings.astype('float32'))
-    return idx, embeddings
+    index = faiss.IndexFlatIP(dim)
+    index.add(embeddings.astype('float32'))
+    return index, embeddings
 
 def recommend(book_id, books, index, embeddings, top_n=5):
-    # book_id 컬럼이 문자열로 되어 있다고 가정
     mask = books['book_id'] == str(book_id)
     if not mask.any():
         print(f"❌ book_id {book_id}를 찾을 수 없습니다.", file=sys.stderr)
-        return pd.DataFrame()
-    target_idx = mask.idxmax()
+        # 빈 DataFrame에 컬럼만 지정
+        return pd.DataFrame(columns=['book_id', 'title'])
 
-    # 자기 자신 포함 top_n+1 검색 → 첫 번째(자기 자신) 제외
+    target_idx = mask.idxmax()
     D, I = index.search(embeddings[target_idx:target_idx+1], top_n + 1)
     rec_idxs = I[0][1: top_n+1]
     return books.iloc[rec_idxs][['book_id', 'title']]
 
 def main():
-    # 0) 인자 검사
     if len(sys.argv) < 2:
         print("Usage: python content_based.py <book_id> [top_n]", file=sys.stderr)
         sys.exit(1)
@@ -54,14 +66,11 @@ def main():
         print("❌ top_n 은 정수여야 합니다.", file=sys.stderr)
         sys.exit(1)
 
-    # 1) 데이터 로드 & 인덱스 생성 (한 번만)
     books = load_data()
     index, embeddings = build_index(books['description'])
-
-    # 2) 추천 실행
     rec_df = recommend(book_id, books, index, embeddings, top_n=top_n)
 
-    # 3) 추천된 book_id 한 줄씩 출력
+    # 빈 DataFrame이어도 book_id 컬럼이 있으므로 KeyError 없음
     for bid in rec_df['book_id'].tolist():
         print(bid)
 

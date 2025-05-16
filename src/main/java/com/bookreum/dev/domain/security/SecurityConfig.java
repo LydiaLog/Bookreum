@@ -37,16 +37,18 @@ import java.util.Collections;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtTokenProvider jwtTokenProvider;
-    private final CustomOAuth2UserService customOAuth2UserService;
+	private final JwtTokenProvider jwtTokenProvider;
+    private final CorsFilter corsFilter;
     private final CustomSocialLoginSuccessHandler customSocialSuccessHandler;
+    private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomUserDetailsService customUserDetailsService;
+    private final DataSource dataSource;
+    private final AccessDeniedHandler customAccessDeniedHandler;
     
     /**
      * Remember-Me JDBC 토큰 저장소에 사용할 DataSource
      * Spring Boot가 application.properties의 설정으로 자동 구성합니다.
      */
-    private final DataSource dataSource;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -57,49 +59,35 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // CSRF 비활성화 (REST+JWT 환경)
+            // CSRF 비활성화 (REST API + JWT)
             .csrf(csrf -> csrf.disable())
 
-            // 세션은 필요할 때만 생성
-            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+            // 세션 사용 안 함
+            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-            // CORS 필터 등록
-            .addFilterBefore(corsFilter(), UsernamePasswordAuthenticationFilter.class)
+            // CORS 필터 적용
+            .addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class)
 
-            // 인증 실패(401), 인가 실패(403) 핸들링
-            .exceptionHandling(ex -> ex
-                .authenticationEntryPoint((req, res, ex2) -> {
-                    res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    res.setContentType("application/json;charset=UTF-8");
-                    res.getWriter().write("{\"error\":\"인증이 필요합니다.\"}");
-                })
-                .accessDeniedHandler(customAccessDeniedHandler())
-            )
-
-            // 커스텀 UserDetailsService 등록
-            .userDetailsService(customUserDetailsService)
-
-            // 폼 로그인 설정
+            // 폼 로그인(소셜 로그인 콜백) 허용
             .formLogin(form -> form
                 .loginPage("/user/login")
-                .loginProcessingUrl("/user/login")
                 .successHandler(customSocialSuccessHandler)
                 .permitAll()
             )
 
-            // 로그아웃 설정
+            // 로그아웃
             .logout(logout -> logout
-                .logoutRequestMatcher(new AntPathRequestMatcher("/user/logout"))
+                .logoutUrl("/user/logout")
                 .deleteCookies("JSESSIONID")
                 .logoutSuccessUrl("/user/login?logout")
             )
 
-            // Remember-Me 설정
+            // Remember-Me
             .rememberMe(rm -> rm
-                .key("rememberKey1234")
-                .tokenValiditySeconds(60 * 60 * 24 * 30)
                 .tokenRepository(persistentTokenRepository())
                 .userDetailsService(customUserDetailsService)
+                .key("rememberKey1234")
+                .tokenValiditySeconds(60 * 60 * 24 * 30)
             )
 
             // OAuth2 로그인 (카카오)
@@ -109,16 +97,37 @@ public class SecurityConfig {
                 .successHandler(customSocialSuccessHandler)
             )
 
-            // URL 접근 권한 설정
+            // 권한 설정
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
-                .requestMatchers("/user/login", "/api/auth/**", "/ws-chat/**").permitAll()
-                .anyRequest().authenticated()
-            )
+                    // 1) 정적 리소스·OAuth·웹소켓 등
+                    .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
+                    .requestMatchers("/user/login", "/api/auth/**", "/ws-chat/**").permitAll()
 
-            // JWT 인증 필터 등록
+                    // 2) 북로그(Posts) → 목록, 검색(책 검색 & 컨텐츠 검색), 상세
+                    .requestMatchers(HttpMethod.GET,
+                        "/",                           // 홈(전체 글 페이징)
+                        "/api/posts",                  // 게시글 목록 or 검색(키워드 query param)
+                        "/api/posts/searchBooks",      // 책 검색 (키워드 → Aladin API)
+                        "/api/posts/**"                // /api/posts/{id} 상세 (단, /api/posts/{id}/heart-count 은 ** 두 단계라 매치 안 됨)
+                    ).permitAll()
+
+                    // 3) 북클럽(Clubs) → 목록, 책 검색, 상세
+                    .requestMatchers(HttpMethod.GET,
+                        "/api/clubs",                  // 클럽 목록
+                        "/api/clubs/searchBooks",      // 책 검색 (키워드 → Aladin API)
+                        "/api/clubs/**"                // /api/clubs/{id} 상세 (그 이하 /applications/** 은 매치 안 됨)
+                    ).permitAll()
+
+                    // 4) 나머지 모든 요청(POST/PUT/DELETE 포함)은 인증된 회원만
+                    .anyRequest().authenticated()
+                )
+
+            // JWT 인증 필터
             .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, customUserDetailsService),
-                             UsernamePasswordAuthenticationFilter.class);
+                             UsernamePasswordAuthenticationFilter.class)
+
+            // 403 접근 거부 핸들러
+            .exceptionHandling(ex -> ex.accessDeniedHandler(customAccessDeniedHandler));
 
         return http.build();
     }

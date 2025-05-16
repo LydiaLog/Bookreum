@@ -2,6 +2,8 @@ package com.bookreum.dev.domain.club.controller;
 
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -98,15 +100,16 @@ public class ClubController {
     }
 
     /**
-     * 모든 모임 목록 조회
-     * @return 모임 DTO 리스트
+     * 모든 모임 목록 조회 or 키워드 검색 (페이징, sort=latest|oldest)
      */
     @GetMapping
-    public ResponseEntity<List<ClubDTO>> listClubs() {
-        List<ClubDTO> dtos = clubService.listClubs().stream()
-                .map(ClubDTO::fromEntity)
-                .toList();
-        return ResponseEntity.ok(dtos);
+    public ResponseEntity<Page<ClubDTO>> listOrSearchClubs(
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "sort", defaultValue = "latest") String sort,
+            Pageable pageable
+    ) {
+        Page<ClubDTO> page = clubService.listOrSearchClubs(keyword, sort, pageable);
+        return ResponseEntity.ok(page);
     }
 
     /**

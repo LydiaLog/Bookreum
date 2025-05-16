@@ -1,4 +1,4 @@
-package com.bookreum.dev.domain.book;
+package com.bookreum.dev.global;
 
 import jakarta.servlet.MultipartConfigElement;
 import lombok.RequiredArgsConstructor;

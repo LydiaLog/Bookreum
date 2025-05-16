@@ -29,11 +29,11 @@ public interface PostRepository extends JpaRepository<PostEntity, Integer> {
     Page<PostEntity> findAllByOrderByCreatedAtAsc(Pageable pageable);
 
     /**
-     * 키워드 검색 (제목, 책 제목, 저자) + 최신순 정렬 (페이징)
-     * JPQL에서 엔티티 이름은 기본적으로 클래스명(PostEntity) 입니다.
+     * 키워드 검색 (제목·본문·책 제목·저자) + 최신순 정렬 (페이징)
      */
     @Query("SELECT p FROM PostEntity p JOIN p.book b " +
            "WHERE LOWER(p.title) LIKE LOWER(CONCAT('%', :kw, '%')) " +
+           "   OR LOWER(p.content) LIKE LOWER(CONCAT('%', :kw, '%')) " +       // 본문 포함
            "   OR LOWER(b.title) LIKE LOWER(CONCAT('%', :kw, '%')) " +
            "   OR LOWER(b.author) LIKE LOWER(CONCAT('%', :kw, '%')) " +
            "ORDER BY p.createdAt DESC")
@@ -43,10 +43,11 @@ public interface PostRepository extends JpaRepository<PostEntity, Integer> {
     );
 
     /**
-     * 키워드 검색 (제목, 책 제목, 저자) + 오래된순 정렬 (페이징)
+     * 키워드 검색 (제목·본문·책 제목·저자) + 오래된순 정렬 (페이징)
      */
     @Query("SELECT p FROM PostEntity p JOIN p.book b " +
            "WHERE LOWER(p.title) LIKE LOWER(CONCAT('%', :kw, '%')) " +
+           "   OR LOWER(p.content) LIKE LOWER(CONCAT('%', :kw, '%')) " +       // 본문 포함
            "   OR LOWER(b.title) LIKE LOWER(CONCAT('%', :kw, '%')) " +
            "   OR LOWER(b.author) LIKE LOWER(CONCAT('%', :kw, '%')) " +
            "ORDER BY p.createdAt ASC")
@@ -54,6 +55,7 @@ public interface PostRepository extends JpaRepository<PostEntity, Integer> {
         @Param("kw") String keyword,
         Pageable pageable
     );
+
 
     /**
      * 특정 사용자가 작성한 게시글 조회 (최신순, 페이징)

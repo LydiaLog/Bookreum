@@ -1,12 +1,18 @@
 package com.bookreum.dev.domain.club.service;
 
-import com.bookreum.dev.domain.club.config.FileStorageService;
+import com.bookreum.dev.domain.club.dto.ClubDTO;
 import com.bookreum.dev.domain.club.entity.ClubEntity;
 import com.bookreum.dev.domain.club.repository.ClubRepository;
+import com.bookreum.dev.global.FileStorageService;
+
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
 
 import java.util.List;
 
@@ -86,11 +92,19 @@ public class ClubService {
     }
 
     /**
-     * 모든 클럽 목록을 조회합니다.
-     * @return ClubEntity 리스트
+     * 클럽 목록 조회 or 검색
      */
     @Transactional(readOnly = true)
-    public List<ClubEntity> listClubs() {
-        return clubRepository.findAll();
+    public Page<ClubDTO> listOrSearchClubs(String keyword, String sort, Pageable pageable) {
+        Page<ClubEntity> page;
+        if (keyword == null || keyword.isBlank()) {
+            page = clubRepository.findAll(pageable);
+        } else if ("oldest".equalsIgnoreCase(sort)) {
+            page = clubRepository.searchByKeywordOrderByOldest(keyword, pageable);
+        } else {
+            page = clubRepository.searchByKeywordOrderByLatest(keyword, pageable);
+        }
+        return page.map(ClubDTO::fromEntity);
     }
+    
 }

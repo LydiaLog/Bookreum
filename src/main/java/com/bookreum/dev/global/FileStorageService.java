@@ -1,4 +1,4 @@
-package com.bookreum.dev.domain.club.config;
+package com.bookreum.dev.global;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
