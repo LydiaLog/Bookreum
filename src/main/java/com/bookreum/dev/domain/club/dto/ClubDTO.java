@@ -2,8 +2,10 @@ package com.bookreum.dev.domain.club.dto;
 
 import java.time.LocalDateTime;
 
+import com.bookreum.dev.domain.book.BookEntity;
 import com.bookreum.dev.domain.club.entity.ClubEntity;
 import com.bookreum.dev.domain.club.entity.ClubStatus;
+import com.bookreum.dev.domain.user.UserEntity;
 
 import lombok.*;
 
@@ -29,6 +31,8 @@ public class ClubDTO {
     private Integer bookId;
     private Integer createdById;
     private LocalDateTime createdAt;
+    
+    private String coverImageUrl;
 
     public static ClubDTO fromEntity(ClubEntity e) {
         if (e == null) {
@@ -55,6 +59,22 @@ public class ClubDTO {
             .bookId(e.getBook() != null ? e.getBook().getId() : null)
             .createdById(e.getUser() != null ? e.getUser().getId() : null)
             .createdAt(e.getCreatedAt())
+            .coverImageUrl(e.getCoverImageUrl())
             .build();
+    }
+    /** ClubEntity 빌드를 위해 bookId를 Entity로 매핑할 때 사용 */
+    public ClubEntity toEntity(UserEntity creator, BookEntity book,String coverUrl) {
+        return ClubEntity.builder()
+                .title(title)
+                .description(description)
+                .minParticipants(minParticipants)
+                .maxParticipants(maxParticipants)
+                .applicationDeadline(applicationDeadline)
+                .activityDurationDays(activityDurationDays)
+                .status(status)
+                .user(creator)
+                .book(book)        
+                .coverImageUrl(coverUrl)
+                .build();
     }
 }

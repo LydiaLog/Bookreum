@@ -13,9 +13,11 @@ import org.springframework.web.util.UriBuilder;
 @RequiredArgsConstructor
 public class AladinBookClientImpl implements AladinBookClient {
 
+	/** application.properties 에 설정된 Aladin TTB 키 */
     @Value("${aladin.ttb-key}")
     private String ttbKey; // properties 파일에서 API 키 로드
 
+    /** WebClient 인스턴스 */
     private final WebClient webClient = WebClient.builder()
             .baseUrl("https://www.aladin.co.kr/ttb/api")
             .defaultHeader("Accept", MediaType.APPLICATION_JSON_VALUE)

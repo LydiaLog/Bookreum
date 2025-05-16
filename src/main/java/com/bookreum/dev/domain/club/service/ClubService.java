@@ -1,10 +1,12 @@
 package com.bookreum.dev.domain.club.service;
 
+import com.bookreum.dev.domain.club.config.FileStorageService;
 import com.bookreum.dev.domain.club.entity.ClubEntity;
 import com.bookreum.dev.domain.club.repository.ClubRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -16,15 +18,24 @@ import java.util.List;
 public class ClubService {
 
     private final ClubRepository clubRepository;
-
+    private final FileStorageService fileStorageService;
     /**
      * 새로운 클럽(모임)을 생성하고 저장합니다.
      * @param club 생성할 모임 엔티티 정보
      * @return 저장된 ClubEntity
      */
     @Transactional
-    public ClubEntity createClub(ClubEntity club) {
-        return clubRepository.save(club);
+    public ClubEntity createClub(ClubEntity club, MultipartFile coverImage,String coverUrlIfProvided ) {
+    	 // 1) 이미지 결정 로직
+        String finalCover = coverImage != null && !coverImage.isEmpty()
+            ? fileStorageService.storeFile(coverImage)
+            : (coverUrlIfProvided != null && !coverUrlIfProvided.isBlank()
+                ? coverUrlIfProvided
+                : club.getBook().getCoverImageUrl());
+
+        club.setCoverImageUrl(finalCover);
+
+    	return clubRepository.save(club);
     }
 
     /**

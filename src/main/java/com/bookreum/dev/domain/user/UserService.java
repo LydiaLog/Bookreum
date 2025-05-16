@@ -7,7 +7,9 @@ import com.bookreum.dev.domain.post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 
 @Service
@@ -52,5 +54,16 @@ public class UserService {
                 long heartCount = postHeartRepository.countByPostId(post.getId());
                 return PostDto.Response.fromEntity(post, post.getUser(), heartCount, 0L);
             });
+    }
+    /**
+     * 지정한 ID의 UserEntity를 조회합니다.
+     * 없으면 404 예외를 던집니다.
+     */
+    public UserEntity getUserEntity(Integer userId) {
+        return userRepository.findById(userId)
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "사용자를 찾을 수 없습니다. id=" + userId
+            ));
     }
 }

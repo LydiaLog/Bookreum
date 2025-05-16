@@ -75,4 +75,8 @@ public class ClubEntity {
    /** 채팅방 연관 */
    @OneToOne(mappedBy = "club", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
    private ChatRoomEntity chatRoom;
+   
+   /** 모임 대표 이미지 URL */
+   @Column(length = 255)
+   private String coverImageUrl;
 }

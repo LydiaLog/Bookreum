@@ -30,15 +30,22 @@ public class MyPageService {
         UserEntity me = userRepository.findById(userId)
             .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자 ID: " + userId));
 
-        // ② 나의 글
+        // ① 내가 쓴 글: 실제 좋아요·댓글 수 노출
         var myPosts = postRepo.findByUserOrderByCreatedAtDesc(me).stream()
-                .map(PostDto.Response::fromEntity)
-                .toList();
+            .map(post -> {
+                long heartCount   = heartRepo.countByPostId(post.getId());
+                long commentCount = 0L; // 댓글 기능 미구현 시 기본 0
+                return PostDto.Response.fromEntity(post, me, heartCount, commentCount);
+            })
+            .toList();
 
-        // ③ 좋아요 누른 글
-        var liked = heartRepo.findPostsLikedByUser(me).stream()
-                .map(PostDto.Response::fromEntity)
-                .toList();
+        // ② 내가 좋아요 누른 글(남의 글): 좋아요·댓글 수 숨김
+        var likedPosts = postRepo.findPostsLikedByUser(me).stream()
+            .map(post ->
+                // heartCount, commentCount 모두 0L로 고정
+                PostDto.Response.fromEntity(post, me, 0L, 0L)
+            )
+            .toList();
 
         // ④ 신청한 모임
         var apps = appRepo.findByUser(me).stream()
@@ -53,7 +60,7 @@ public class MyPageService {
         return MyPageDTO.builder()
                 .profile(UserDTO.fromEntity(me))
                 .myPosts(myPosts)
-                .likedPosts(liked)
+                .likedPosts(likedPosts)
                 .appliedClubs(apps)
                 .chatRooms(rooms)
                 .build();

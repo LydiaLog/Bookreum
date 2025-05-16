@@ -2,6 +2,9 @@ package com.bookreum.dev.domain.post.repository;
 
 import com.bookreum.dev.domain.post.entity.PostEntity;
 import com.bookreum.dev.domain.user.UserEntity;
+
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -73,4 +76,17 @@ public interface PostRepository extends JpaRepository<PostEntity, Integer> {
         @Param("user") UserEntity user,
         Pageable pageable
     );
+ // ▼ 추가: Pageable 없이 리스트를 돌려주는 메서드
+    List<PostEntity> findByUserOrderByCreatedAtDesc(UserEntity user);
+
+    // ▼ 좋아요 누른 글도 동일
+    @Query("""
+       SELECT p FROM PostEntity p
+       WHERE EXISTS (
+           SELECT ph FROM PostHeart ph
+           WHERE ph.post = p AND ph.user = :user
+       )
+    """)
+    List<PostEntity> findPostsLikedByUser(@Param("user") UserEntity user);
+
 }
