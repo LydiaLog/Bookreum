@@ -27,28 +27,32 @@ public class ContentBasedService {
                 .toList();
     }
 
-    // 2. 콘텐츠 기반 AI 추천 (Python 연동)
-    //"죽고 싶지만 떡볶이는 먹고 싶어" → 내용이 비슷한 감정 에세이/우울증 관련 회복 책 등 
-    //의미적으로 유사한 책 추천 가능.
-    public List<ContentBookDto> recommendContentBased(String isbn13) {
-        List<String> recommendedIsbn13s = runPythonRecommendation(isbn13);
+ // 2. 콘텐츠 기반 AI 추천 (Python 연동 - 제목 기반)
+    public List<ContentBookDto> recommendContentBased(String title) {
+        // 1. Python 추천기에서 제목을 기반으로 유사한 책 추천 받기
+        List<String> recommendedBooks = runPythonRecommendation(title);
         List<ContentBookDto> result = new ArrayList<>();
 
-        for (String isbn : recommendedIsbn13s) {
-            List<AladinItem> items = aladinBookClient.searchBooks(isbn).getItem();
-            if (!items.isEmpty()) {
-                result.add(mapToDto(items.get(0)));  // 첫 번째 결과만 사용
+        // 2. 추천된 제목으로 Aladin API에서 책 정보 가져오기
+        for (String bookInfo : recommendedBooks) {
+            String[] info = bookInfo.split("\\|");
+            if (info.length >= 1) {
+                ContentBookDto dto = ContentBookDto.builder()
+                        .title(info[0].trim())
+                        .description(info[1].trim())
+                        .build();
+                result.add(dto);
             }
         }
 
         return result;
     }
 
-    // 3. 파이썬 추천기 실행 함수
-    private List<String> runPythonRecommendation(String isbn13) {
+    // 3. 파이썬 추천기 실행 함수 (제목 기반)
+    private List<String> runPythonRecommendation(String title) {
         List<String> result = new ArrayList<>();
         try {
-            ProcessBuilder pb = new ProcessBuilder("python", "recommender/run_model.py", isbn13);
+            ProcessBuilder pb = new ProcessBuilder("python", "run_model.py", title);
             pb.redirectErrorStream(true);
             Process process = pb.start();
 
@@ -66,7 +70,9 @@ public class ContentBasedService {
 
         return result;
     }
- // AladinItem → DTO 변환
+
+
+    // AladinItem → DTO 변환
     private ContentBookDto mapToDto(AladinItem item) {
         return ContentBookDto.builder()
                 .isbn13(item.getIsbn13())

@@ -14,4 +14,5 @@ public class ContentBookDto {
     private String title;
     private String author;
     private String coverImageUrl;
+    private String description; // ✅ description 필드 추가
 }

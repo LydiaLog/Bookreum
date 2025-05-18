@@ -33,7 +33,7 @@ public class CommentHeart {
         this.createdAt = LocalDateTime.now();
     }
 
-    // Setter 메소드로 직접 변경 가능
+    // ✅ Setter 메소드로 관계 설정
     public void setComment(Comment comment) {
         this.comment = comment;
     }

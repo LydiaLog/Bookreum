@@ -8,6 +8,8 @@ import com.bookreum.domain.user.entity.User;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 @Service
 @RequiredArgsConstructor
@@ -19,28 +21,30 @@ public class CommentHeartService {
     @Transactional
     public void toggleHeart(Integer commentId, User user) {
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("댓글이 존재하지 않습니다."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "댓글이 존재하지 않습니다."));
 
-        commentHeartRepository.findByUserAndComment(user, comment)
-                .ifPresentOrElse(
-                        heart -> commentHeartRepository.delete(heart), // 공감 취소
-                        () -> commentHeartRepository.save(CommentHeart.builder()
-                                .user(user)
-                                .comment(comment)
-                                .build()) // 공감 등록
-                );
+        CommentHeart existingHeart = commentHeartRepository.findByUserAndComment(user, comment).orElse(null);
+
+        if (existingHeart != null) {
+            commentHeartRepository.delete(existingHeart);
+        } else {
+            commentHeartRepository.save(CommentHeart.builder()
+                    .user(user)
+                    .comment(comment)
+                    .build());
+        }
     }
 
     public boolean hasHeart(Integer commentId, User user) {
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("댓글이 존재하지 않습니다."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "댓글이 존재하지 않습니다."));
 
         return commentHeartRepository.findByUserAndComment(user, comment).isPresent();
     }
 
     public Long getHeartCount(Integer commentId) {
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("댓글이 존재하지 않습니다."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "댓글이 존재하지 않습니다."));
 
         return commentHeartRepository.countByComment(comment);
     }

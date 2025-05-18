@@ -110,11 +110,13 @@ public class PostController {
     @PutMapping("/{id}")
     public ResponseEntity<Void> updatePost(
             @PathVariable("id") Integer id,
-            @RequestParam(required = false) String title,
-            @RequestParam(required = false) String content,
-            @RequestParam(required = false) Integer bookId,
-            @RequestPart(value = "coverImage", required = false) MultipartFile image) {
-        postService.updatePost(id, title, content, bookId, image);
+            @RequestParam(value = "title", required = false) String title,
+            @RequestParam(value = "content", required = false) String content,
+            @RequestParam(value = "bookId", required = false) Integer bookId, // ✅ bookId는 Optional로 처리
+            @RequestParam(value = "coverUrl", required = false) String coverUrl,
+            @RequestPart(value = "coverImage", required = false) MultipartFile coverImage) {
+        
+        postService.updatePost(id, title, content, bookId, coverImage, coverUrl);
         return ResponseEntity.ok().build();
     }
 

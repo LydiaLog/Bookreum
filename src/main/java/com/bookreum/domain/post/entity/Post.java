@@ -42,53 +42,51 @@ public class Post {
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PostHeart> postHearts = new ArrayList<>();
-    
-    //✅ 공감 수 필드 추가
+
+    // ✅ 공감 수 필드 추가
     @Column(name = "heart_count", nullable = false)
-    @Builder.Default
     private long heartCount = 0L;
-    
-    //✅ 공감 수 증가
-    public void incrementHeartCount() {
-    	this.heartCount++;
-    }
-    
-    //✅ 공감 수 감소
-    public void decrementHeartCount() {
-    	if(this.heartCount > 0) {
-    		this.heartCount--;
-    	}
-    }
-    
-    //✅ 생성 시간 설정
+
+    // ✅ 생성 시간 설정
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
     }
 
-    // ✅ updateBook 메소드 추가
-    public void updateBook(Book book) {
-        this.book = book;
+    // ✅ 게시글 정보 수정 (명확한 Setter 방식)
+    public void setTitle(String title) {
+        if (title != null) {
+            this.title = title;
+        }
     }
 
-    // ✅ update 메소드로 일반 수정
-    public void update(String title, String content, String imageUrl) {
-        this.title = title;
-        this.content = content;
-        this.imageUrl = imageUrl;
+    public void setContent(String content) {
+        if (content != null) {
+            this.content = content;
+        }
     }
 
-    // ✅ PostHeart 추가
-    public void addHeart(PostHeart postHeart) {
-        this.postHearts.add(postHeart);
-        postHeart.setPost(this);
-        incrementHeartCount();
+    public void setImageUrl(String imageUrl) {
+        if (imageUrl != null) {
+            this.imageUrl = imageUrl;
+        }
     }
 
-    // ✅ PostHeart 삭제
-    public void removeHeart(PostHeart postHeart) {
-        this.postHearts.remove(postHeart);
-        postHeart.setPost(null);
-        decrementHeartCount();
+    public void setBook(Book book) {
+        if (book != null) {
+            this.book = book;
+        }
+    }
+
+    // ✅ 공감 수 증가
+    public void incrementHeartCount() {
+        this.heartCount++;
+    }
+
+    // ✅ 공감 수 감소
+    public void decrementHeartCount() {
+        if (this.heartCount > 0) {
+            this.heartCount--;
+        }
     }
 }
