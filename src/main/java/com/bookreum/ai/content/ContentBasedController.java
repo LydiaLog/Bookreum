@@ -2,6 +2,8 @@ package com.bookreum.ai.content;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -10,21 +12,44 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ContentBasedController {
 
+    private static final Logger logger = LoggerFactory.getLogger(ContentBasedController.class);
     private final ContentBasedService contentBasedService;
 
-    // 1. 단순 제목 기반 추천
-    //http://localhost:8080/api/recommend/title?title=채식주의자
-    //→ 알라딘 검색 기반 추천
     @GetMapping("/title")
-    public List<ContentBookDto> recommendByTitle(@RequestParam String title) {
-        return contentBasedService.recommendByTitle(title);
+    public List<ContentBookDto> recommendByTitle(@RequestParam(name = "title") String title) {
+        logger.info("📌 [Title-Based Recommendation] Requested Title: {}", title);
+
+        if (title == null || title.trim().isEmpty()) {
+            logger.warn("❌ [Title-Based Recommendation] 제목이 비어있습니다.");
+            throw new IllegalArgumentException("제목을 입력해 주세요.");
+        }
+
+        try {
+            List<ContentBookDto> recommendedBooks = contentBasedService.recommendByTitle(title);
+            logger.info("✅ [Title-Based Recommendation] Total Recommended Books: {}", recommendedBooks.size());
+            return recommendedBooks;
+        } catch (Exception e) {
+            logger.error("❌ [Title-Based Recommendation] 에러 발생: {}", e.getMessage(), e);
+            throw new RuntimeException("추천 도중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+        }
     }
 
-    // 2. 콘텐츠 기반 AI 추천
-    //http://localhost:8080/api/recommend/content?isbn13=9788956055466
-    //→ 콘텐츠 기반 AI 추천 (파이썬 연동)
     @GetMapping("/content")
-    public List<ContentBookDto> recommendByIsbn13(@RequestParam String isbn13) {
-        return contentBasedService.recommendContentBased(isbn13);
+    public List<ContentBookDto> recommendContentBased(@RequestParam(name = "title") String title) {
+        logger.info("📌 [Content-Based AI Recommendation] Requested Title: {}", title);
+
+        if (title == null || title.trim().isEmpty()) {
+            logger.warn("❌ [Content-Based AI Recommendation] 제목이 비어있습니다.");
+            throw new IllegalArgumentException("제목을 입력해 주세요.");
+        }
+
+        try {
+            List<ContentBookDto> recommendedBooks = contentBasedService.recommendContentBased(title);
+            logger.info("✅ [Content-Based AI Recommendation] Total Recommended Books: {}", recommendedBooks.size());
+            return recommendedBooks;
+        } catch (Exception e) {
+            logger.error("❌ [Content-Based AI Recommendation] 에러 발생: {}", e.getMessage(), e);
+            throw new RuntimeException("서버에서 추천을 처리하는 중 오류가 발생했습니다.");
+        }
     }
 }
