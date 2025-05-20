@@ -1,11 +1,11 @@
 // src/pages/LoginPage.jsx
-/* import React from "react";
-import { useNavigate } from "react-router-dom";
+import React from "react";
+// import { useNavigate } from "react-router-dom";
 import KakaoLogin from "react-kakao-login";
-import '../styles/LoginPage.css';
+import "../styles/LoginPage.css";
 
 function LoginPage() {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const handleSuccess = (response) => {
     console.log("Kakao Login Success:", response);
@@ -20,7 +20,8 @@ function LoginPage() {
 
     // 로컬 저장소에 사용자 정보 저장
     localStorage.setItem("user", JSON.stringify(user));
-    navigate("/"); // 로그인 후 메인 페이지로 이동
+    window.location.reload();
+    // navigate("/"); // 로그인 후 메인 페이지로 이동
   };
 
   const handleFailure = (error) => {
@@ -54,4 +55,4 @@ function LoginPage() {
   );
 }
 
-export default LoginPage; */
+export default LoginPage;

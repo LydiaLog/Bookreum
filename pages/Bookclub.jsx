@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../axiosConfig';
 import SearchBar from '../components/SearchBar';
 import SortDropdown from '../components/SortDropdown';
 import BookclubCard from '../components/BookclubCard';
@@ -13,13 +14,22 @@ import '../styles/Bookclub.css';
 function Bookclub() {
   const navigate = useNavigate();
 
+  const today = new Date().setHours(0, 0, 0, 0);
+  const getStatus = (dateStr) => 
+    new Date(dateStr).setHours(0, 0, 0, 0) < today ? "closed" : "open";
+
   /* 카드 데이터 */
-  const [clubs, setClubs] = useState(dummyBookclubs);
+  const [clubs, setClubs] = useState(
+    dummyBookclubs.map((c) => ({...c, status: getStatus(c.date)}))
+  );
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   /* 모달 상태 */
   const [showModal, setShowModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [selectedClub, setSelectedClub] = useState(null);
+  // const [isJoinDisabled, setIsJoinDisabled] = useState(false);
 
   /* 검색 입력값과 확정 검색어 분리 */
   const [query, setQuery] = useState('');
@@ -39,16 +49,50 @@ function Bookclub() {
 
     if (sortOption === 'open') list = list.filter(c => c.status === 'open');
     if (sortOption === 'closed') list = list.filter(c => c.status === 'closed');
+    if (sortOption !== 'all')    list = list.filter(c => c.status === sortOption);
 
     const start = (page - 1) * pageSize;
     const slice = list.slice(start, start + pageSize);
     return { pageData: slice, totalPages: Math.ceil(list.length / pageSize) };
   }, [clubs, keyword, sortOption, page]);
 
+  /* ===== 1. DB로부터 북클럽 목록 불러오기 ===== */
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await api.get("/api/clubs", {
+          params: {
+            includeBook: true,
+          },
+        });
+        console.log("북클럽 목록 응답:", data);
+
+        let clubsData = [];
+        if (data && Array.isArray(data)) {
+          clubsData = data;
+        } else if (data && data.content && Array.isArray(data.content)) {
+          clubsData = data.content;
+        } else {
+          console.error("예상치 못한 데이터 구조:", data);
+          setError("데이터 형식이 올바르지 않습니다.");
+          return;
+        }
+
+        setClubs(clubsData);
+      } catch (err) {
+        console.error("Failed to load bookclubs:", err);
+        setError("북클럽을 불러오지 못했습니다.");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+
   /* 새 클럽 추가 */
   const addClub = (club) => {
-    dummyBookclubs.unshift(club);
-    setClubs([...dummyBookclubs]);
+    const withStatus = { ...club, status: getStatus(club.date)};
+    setClubs((prev) => [withStatus, ...prev]);
     setKeyword('');
     setQuery('');
     setPage(1);
@@ -56,7 +100,11 @@ function Bookclub() {
 
   /* 참여 모달 열기 */
   const openJoinModal = (club) => {
+    // const today = new Date().toISOString().split('T')[0];
+    // const isClosed = new Date(today) > new Date(club.date);
+    
     setSelectedClub(club);
+    // setIsJoinDisabled(isClosed);
     setShowJoinModal(true);
   };
 
@@ -82,32 +130,47 @@ function Bookclub() {
 
   return (
     <>
-      <div className="page-wrapper" style={{ display: 'flex', justifyContent: 'center' }}>
+      <div
+        className="page-wrapper"
+        style={{ display: "flex", justifyContent: "center" }}
+      >
         <h2 className="page-title">북클럽</h2>
         <p className="page-subtitle">책으로 이어지는 우리들의 이야기</p>
 
-        <div style={{ marginLeft: '13%' }}>
+        <div style={{ marginLeft: "13%" }}>
           {/* 검색 / 정렬 / 만들기 */}
-          <div style={{
-            display: 'flex', justifyContent: 'space-between',
-            alignItems: 'flex-end', marginTop: 20
-          }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-end",
+              marginTop: 20,
+            }}
+          >
             <SearchBar
               value={query}
-              onChange={e => setQuery(e.target.value)}
+              onChange={(e) => setQuery(e.target.value)}
               onSearch={commitSearch}
             />
 
-            <div style={{ display: 'flex', gap: 10, marginRight: 10 }}>
+            <div style={{ display: "flex", gap: 10, marginRight: 10 }}>
               <SortDropdown
                 value={sortOption}
-                onChange={e => { setSortOption(e.target.value); setPage(1); }}
+                onChange={(e) => {
+                  setSortOption(e.target.value);
+                  setPage(1);
+                }}
                 options={sortOptions}
               />
               <button
                 style={{
-                  background: '#B4C9A4', opacity: 0.8, padding: '8px 18px',
-                  fontSize: 14, border: 'none', borderRadius: 6, cursor: 'pointer'
+                  background: "#B4C9A4",
+                  opacity: 0.8,
+                  padding: "8px 18px",
+                  fontSize: 14,
+                  border: "none",
+                  borderRadius: 6,
+                  cursor: "pointer",
                 }}
                 onClick={() => setShowModal(true)}
               >
@@ -116,27 +179,59 @@ function Bookclub() {
             </div>
           </div>
 
-          {/* 카드 리스트 */}
-          <div className="bookclublist">
-            {pageData.map(club => (
-              <BookclubCard
-                key={club.id}
-                bookclub={club}
-                onClick={() => openJoinModal(club)}
-              />
-            ))}
-            {pageData.length === 0 && <p>검색 결과가 없습니다.</p>}
-          </div>
+          {/* 상태 표시 */}
+          {loading && (
+            <p style={{ textAlign: "center", marginTop: 40 }}>로딩 중…</p>
+          )}
+          {error && (
+            <p style={{ textAlign: "center", marginTop: 40, color: "red" }}>
+              {error}
+            </p>
+          )}
 
-          {/* 페이지네이션 */}
-          {totalPages > 1 && (
-            <div style={{ textAlign: 'center', marginTop: 20 }}>
-              <Pagination
-                currentPage={page}
-                totalPages={totalPages}
-                onPageChange={setPage}
-              />
-            </div>
+          {/* 카드 리스트 */}
+          {!loading && !error && (
+            <>
+              <div className="bookclublist">
+                {pageData.map((club) => (
+                  <BookclubCard
+                    key={club.id}
+                    bookclub={{
+                      ...club,
+                      book: club.book?.title || "",
+                      author: club.book?.author || "",
+                      nickname: club.createdByNickname || "",
+                      date: club.applicationDeadline
+                        ? new Date(club.applicationDeadline)
+                            .toISOString()
+                            .split("T")[0]
+                        : "",
+                      capacity: club.maxParticipants || 0,
+                      currentMembers: club.currentParticipants || 0,
+                      coverUrl: club.coverImageUrl || "",
+                      description: club.description || "",
+                      leader: {
+                        nickname: club.createdByNickname || "",
+                        profileImageUrl: club.createdByProfileImageUrl || "",
+                      },
+                    }}
+                    onClick={() => openJoinModal(club)}
+                  />
+                ))}
+                {pageData.length === 0 && <p>검색 결과가 없습니다.</p>}
+              </div>
+
+              {/* 페이지네이션 */}
+              {totalPages > 1 && (
+                <div style={{ textAlign: "center", marginTop: 20 }}>
+                  <Pagination
+                    currentPage={page}
+                    totalPages={totalPages}
+                    onPageChange={setPage}
+                  />
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -152,7 +247,23 @@ function Bookclub() {
       {/* 참여하기 모달 */}
       {showJoinModal && selectedClub && (
         <BookclubJoinModal
-          club={selectedClub}
+          club={{
+            ...selectedClub,
+            book: selectedClub.bookTitle || "",
+            author: selectedClub.bookAuthor || "",
+            nickname: selectedClub.createdByNickname || "",
+            date: selectedClub.applicationDeadline
+              ? new Date(selectedClub.applicationDeadline)
+                  .toISOString()
+                  .split("T")[0]
+              : "",
+            description: selectedClub.description || "",
+            coverUrl: selectedClub.coverImageUrl || "",
+            leader: {
+              nickname: selectedClub.createdByNickname || "",
+              profileImageUrl: selectedClub.createdByProfileImageUrl || "",
+            },
+          }}
           onClose={() => setShowJoinModal(false)}
           onJoin={joinClub}
         />
