@@ -1,3 +1,6 @@
+/***********************
+  상세 페이지 래퍼
+***********************/
 .booklog-detail {
     max-width: 720px;
     margin: 3rem auto;
@@ -7,173 +10,74 @@
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
 }
   
-.booklog-detail__title {
-    font-size: 1.7rem;
-    font-weight: bold;
-    margin-bottom: 0.7rem;
-}
+/* ───────── 제목 · 메타 ───────── */
+.booklog-detail__title  { font-size: 1.7rem; font-weight: 700; margin-bottom: .7rem; }
+.booklog-detail__meta   { font-size: .9rem;  color:#777;        margin-bottom: 1.5rem; }
   
-.booklog-detail__meta {
-    font-size: 0.9rem;
-    color: #777;
-    margin-bottom: 1.5rem;
+/* ───────── 이미지 & 캡션 ───────── */
+.booklog-detail__figure {
+    margin: 24px 0;               /* 위·아래 여백 */
+    text-align: center;           /* 이미지 + 캡션 중앙 정렬 */
+    max-width: 150px;             /* 필요하면 한계폭 지정 */
+    margin-left: auto;            /* 가운데 정렬 */
+    margin-right: auto;
 }
   
 .booklog-detail__image {
-    display: block;
-    margin: 0 auto;
-    width: 400px; /* 100%; */
-    height: 300px; /* auto; */
-    max-height: 320px;
-    object-fit: cover;
+    width: 150px;              /* figure 폭을 넘지 않음 */
+    height: auto;                 /* 세로는 비율대로 */
+    object-fit: contain;          /* 큰 이미지도 잘리지 않게 */
     border-radius: 5px;
-    margin-bottom: 1.5rem;
-    background-color: #ddd;
+    background: #ddd;
 }
   
+.booklog-detail__caption {
+    margin-top: 8px;
+    font-size: 16px;
+    color: #444;
+}
+
+.booklog-detail__caption .separator { opacity: .6; }
+  
+/* ───────── 본문 ───────── */
 .booklog-detail__content {
     font-size: 1rem;
     line-height: 1.7;
     color: #333;
     white-space: pre-wrap;
 }
-
-.post__actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-.log-edit-button {
-    background-color: #B4C9A4;
-    padding: 10px 24px;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-
-.log-del-button {
-    background-color: #ddd;
-    padding: 10px 24px;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    cursor: pointer;
-}
-
-.comments {
-    margin-top: 3rem;
-    border-top: 1px solid #ccc;
-    padding-top: 1.5rem;
-}
   
-.comments h3 {
-    margin-bottom: 1rem;
-    font-size: 1.1rem;
-}
+/* ───────── 글 버튼 ───────── */
+.post__actions   { display:flex; justify-content:flex-end; gap:10px; margin-top:10px; }
+.log-edit-button { background:#B4C9A4; padding:10px 24px; border:none; border-radius:8px; font-size:14px; cursor:pointer; transition:.2s; }
+.log-del-button  { background:#ddd;    padding:10px 24px; border:none; border-radius:8px; font-size:14px; cursor:pointer; }
   
-.comments__list {
-    list-style: none;
-    padding: 0;
-    margin-bottom: 1.5rem;
-}
+/* ───────── 댓글 ───────── */
+.comments        { margin-top:3rem; border-top:1px solid #ccc; padding-top:1.5rem; }
+.comments h3     { margin-bottom:1rem; font-size:1.1rem; }
+.comments__list  { list-style:none; padding:0; margin-bottom:1.5rem; }
+.comments__list li { margin-bottom:1rem; padding:.5rem .8rem; background:#f5f5f5; border-radius:8px; }
+.comments__list strong { font-size:.9rem; color:#333; }
+.comments__list p     { margin:4px 0 0; font-size:.95rem; color:#555; }
   
-.comments__list li {
-    margin-bottom: 1rem;
-    padding: 0.5rem 0.8rem;
-    background: #f5f5f5;
-    border-radius: 8px;
-}
+/* 댓글 입력 */
+.comments__form           { display:flex; flex-direction:column; gap:.6rem; }
+.comments__form textarea  { resize:none; padding:.7rem; font-size:.95rem; border-radius:8px; border:1px solid #ccc; }
+.comments__form button    { align-self:flex-end; padding:.4rem 1rem; font-size:.9rem; background:#8a9b78; color:#fff; border:none; border-radius:6px; cursor:pointer; }
   
-.comments__list strong {
-    font-size: 0.9rem;
-    color: #333;
-}
+/* 댓글 액션 */
+.comment__actions         { display:flex; gap:.5rem; margin-top:.4rem; }
+.comment__actions button  { background:none; border:none; font-size:.8rem; color:#888; cursor:pointer; padding:2px 6px; }
   
-.comments__list p {
-    margin: 4px 0 0;
-    font-size: 0.95rem;
-    color: #555;
-}
-  
-.comments__form {
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-}
-  
-.comments__form textarea {
-    resize: none;
-    padding: 0.7rem;
-    font-size: 0.95rem;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-}
-  
-.comments__form button {
-    align-self: flex-end;
-    padding: 0.4rem 1rem;
-    font-size: 0.9rem;
-    background-color: #8a9b78;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-}
-
-.comment__actions {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: 0.4rem;
-}
-  
-.comment__actions button {
-    background: none;
-    border: none;
-    font-size: 0.8rem;
-    color: #888;
-    cursor: pointer;
-    padding: 2px 6px;
-    outline: none;
-}
-  
-.comments__list textarea {
-    width: 100%;
-    font-size: 0.95rem;
-    padding: 0.4rem;
-    border-radius: 6px;
-    border: 1px solid #bbb;
-    margin-top: 0.3rem;
-}
-
+/* 댓글 textarea 공용 */
 .comments__textarea,
 .comment__edit-textarea {
-  font-family: 'Nanum Gothic', sans-serif;
-  font-size: 14px;
-  line-height: 1.5;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  width: 97%;
-  resize: vertical;
-}
-
-/* 이미지 & 캡션 감싸는 figure */
-.booklog-detail__figure {
-    margin: 24px 0;      /* 위아래 여백 */
-    text-align: center;  /* 이미지 + 캡션 중앙 정렬 */
-}
-  
-/* 캡션(제목·작가) */
-.booklog-detail__caption {
-    margin-top: 8px;
-    font-size: 16px;
-    color: #444;
-}
-  
-.booklog-detail__caption .separator {
-    opacity: 0.6;        /* 구분자( | ) 살짝 연하게 */
-}
+    font-family: 'Nanum Gothic', sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    width: 97%;
+    resize: vertical;
+}  

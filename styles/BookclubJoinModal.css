@@ -39,11 +39,9 @@
 }
   
 .join-button {
-    background: #B4C9A4;
     border: none;
     padding: 8px 16px;
     border-radius: 6px;
-    cursor: pointer;
 }
   
 .cancel-button {

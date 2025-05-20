@@ -1,0 +1,27 @@
+/* ────────── RecommendHome 전용 ────────── */
+.recommend-home-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;     /* 가로 중앙 */
+    justify-content: center; /* 세로 중앙 */
+    min-height: 100vh;       /* 뷰포트 꽉 채움 */
+    position: relative;
+    top: -50px;
+}
+  
+.recommend-home-title {
+    font-size: 48px;
+    font-weight: bold;
+    margin-bottom: 30px;     /* 제목 ↔︎ 검색창 간격 */
+    text-align: center;      /* 모바일 대비 중앙 정렬 */
+}
+  
+.recommend-home-title .accent {
+    color: #5b7d48;
+}
+  
+/* SearchBar 전용 컨테이너 (추가 flex 속성 불필요) */
+.searchbar-center {
+    display: flex;
+    justify-content: center;
+}  
