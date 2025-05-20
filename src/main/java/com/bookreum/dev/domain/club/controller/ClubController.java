@@ -73,20 +73,31 @@ public class ClubController {
         @RequestParam(value = "coverUrl", required = false) String coverUrl,
         @RequestPart(value = "coverImage", required = false) MultipartFile coverImage
     ) {
-        // 1) 사용자, 책 조회
-        UserEntity user = userService.getUserEntity(userId);
-        BookEntity book = bookRepository.findById(dto.getBookId())
-            .orElseThrow(() -> new ResponseStatusException(
-                HttpStatus.NOT_FOUND, "책을 찾을 수 없습니다. id=" + dto.getBookId()
-            ));
-        // 2) DTO → Entity (coverImageUrl 은 빈값으로 일단 생성)
-        ClubEntity club = dto.toEntity(user, book, null);
-        // 3) 이미지 로직 포함한 저장
-        ClubEntity saved = clubService.createClub(club, coverImage, coverUrl);
-        // 4) DTO 반환
-        return ResponseEntity.status(HttpStatus.CREATED)
-                             .body(ClubDTO.fromEntity(saved));
+        try {
+            // 1) 사용자, 책 조회
+            UserEntity user = userService.getUserEntity(userId);
+            BookEntity book = bookRepository.findById(dto.getBookId())
+                .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "책을 찾을 수 없습니다. id=" + dto.getBookId()
+                ));
+
+            // 2) DTO → Entity 변환
+            ClubEntity club = dto.toEntity(user, book, coverUrl);
+
+            // 3) 이미지 로직 포함한 저장
+            ClubEntity saved = clubService.createClub(club, coverImage, coverUrl);
+
+            // 4) DTO 반환
+            return ResponseEntity.status(HttpStatus.CREATED)
+                                .body(ClubDTO.fromEntity(saved));
+        } catch (Exception e) {
+            throw new ResponseStatusException(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "북클럽 생성 중 오류가 발생했습니다: " + e.getMessage()
+            );
+        }
     }
+    
 
     /**
      * 특정 모임 조회

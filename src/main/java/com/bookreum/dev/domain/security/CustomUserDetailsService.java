@@ -3,40 +3,33 @@ package com.bookreum.dev.domain.security;
 import com.bookreum.dev.domain.user.UserEntity;
 import com.bookreum.dev.domain.user.UserRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.userdetails.*;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-
 import java.util.Collections;
 
 /**
- * 🔐 Remember-Me 토큰이 있을 때 카카오 ID(=username)로
- *     DB 사용자 정보를 로드해 Authentication 을 복원한다.
+ * UserDetailsService 구현체
+ * DB에서 사용자 엔티티를 조회하여 Spring Security UserDetails 생성
  */
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
 
-    /**
-     * Remember-Me 쿠키가 보낸 kakaoId 로 사용자 조회
-     * @param kakaoId 카카오 고유 ID (subject)
-     */
     @Override
-    public UserDetails loadUserByUsername(String kakaoId) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String id) throws UsernameNotFoundException {
+        // 카카오 ID로 사용자 조회
+        UserEntity user = userRepository.findByKakaoId(id)
+            .orElseThrow(() -> new UsernameNotFoundException("User not found with kakaoId: " + id));
 
-        // 1) DB 조회
-        UserEntity user = userRepository.findByKakaoId(kakaoId)
-            .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + kakaoId));
-
-        log.debug("[REMEMBER-ME] 사용자 복원 ▶ kakaoId={}, nickname={}", kakaoId, user.getNickname());
-
-        // 2) UserDetails 생성 (패스워드/권한은 사용하지 않음)
-        return User.builder()
-                   .username(user.getKakaoId())
-                   .authorities(Collections.emptyList())
-                   .build();
+        return new org.springframework.security.core.userdetails.User(
+            user.getId().toString(),
+            "", // 소셜 로그인 비밀번호 사용 안 함
+            Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
+        );
     }
 }

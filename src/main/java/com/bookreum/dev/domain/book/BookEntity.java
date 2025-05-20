@@ -1,32 +1,41 @@
 package com.bookreum.dev.domain.book;
 
+import com.bookreum.dev.domain.club.entity.ClubEntity;
+import com.bookreum.dev.domain.post.entity.PostEntity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
-import com.bookreum.dev.domain.post.entity.PostEntity;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Table(name = "book")
 @Getter
-@Setter
-@NoArgsConstructor(access = AccessLevel.PUBLIC)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Builder
-@Table(name = "book") // ✅ 테이블 명 명시 (DB의 테이블명과 매칭)
+@Builder(toBuilder = true)
 public class BookEntity {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(nullable = false) // ✅ 필수값으로 지정
+    @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false) // ✅ 필수값으로 지정
+    @Column(nullable = false)
     private String author;
 
-    @Column(length = 255)
+    
     private String coverImageUrl;
 
-    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PostEntity> posts;
+    @JsonIgnore
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<PostEntity> posts = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<ClubEntity> clubs = new ArrayList<>();
 }

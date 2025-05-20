@@ -1,6 +1,5 @@
 package com.bookreum.dev.domain.user;
 
-
 import jakarta.persistence.*;
 import lombok.*;
 import com.bookreum.dev.domain.post.entity.PostEntity;
@@ -44,7 +43,6 @@ public class UserEntity {
     @Builder.Default
     private boolean social = true;
 
-  
     /**
      * 카카오 프로필 변경 시 닉네임·이미지를 동기화한다.
      */
@@ -52,7 +50,6 @@ public class UserEntity {
         this.nickname     = nickname;
         this.profileImage = profileImage;
     }
-
 
     /**
      * 사용자가 작성한 게시글 목록

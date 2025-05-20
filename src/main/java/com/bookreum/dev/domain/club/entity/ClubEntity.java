@@ -77,6 +77,6 @@ public class ClubEntity {
    private ChatRoomEntity chatRoom;
    
    /** 모임 대표 이미지 URL */
-   @Column(length = 255)
+   @Column(name = "club_cover_image_url", length = 255)
    private String coverImageUrl;
 }

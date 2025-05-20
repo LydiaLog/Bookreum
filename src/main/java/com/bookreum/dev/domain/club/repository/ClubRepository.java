@@ -1,5 +1,7 @@
 package com.bookreum.dev.domain.club.repository;
 
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -34,4 +36,10 @@ public interface  ClubRepository extends JpaRepository<ClubEntity, Integer> {
         @Param("kw") String keyword,
         Pageable pageable
     );
+    
+    /**
+     * 클럽 목록 조회 시 책 정보를 함께 가져옵니다.
+     */
+    @Query("SELECT c FROM ClubEntity c LEFT JOIN FETCH c.book")
+    Page<ClubEntity> findAllWithBook(Pageable pageable);
 }

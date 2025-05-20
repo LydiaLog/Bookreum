@@ -11,6 +11,7 @@ import lombok.*;
 
 @Getter @Builder
 @AllArgsConstructor
+@NoArgsConstructor
 public class ClubDTO {
     private Integer id;
     private String title;
@@ -29,6 +30,8 @@ public class ClubDTO {
     private Integer activityDurationDays;
     private ClubStatus status;
     private Integer bookId;
+    private String bookTitle;
+    private String bookAuthor;
     private Integer createdById;
     private LocalDateTime createdAt;
     
@@ -57,6 +60,8 @@ public class ClubDTO {
             .activityDurationDays(e.getActivityDurationDays())
             .status(e.getStatus())
             .bookId(e.getBook() != null ? e.getBook().getId() : null)
+            .bookTitle(e.getBook() != null ? e.getBook().getTitle() : null)
+            .bookAuthor(e.getBook() != null ? e.getBook().getAuthor() : null)
             .createdById(e.getUser() != null ? e.getUser().getId() : null)
             .createdAt(e.getCreatedAt())
             .coverImageUrl(e.getCoverImageUrl())
