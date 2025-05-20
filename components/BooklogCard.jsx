@@ -58,20 +58,23 @@ function BooklogCard({ booklog }) {
             ></div>
             <p style={{ fontSize: "12px", color: "#888", paddingLeft: "8px" }}>{booklog.nickname}</p>
           </div>
-          <p style={{ fontSize: "12px", color: "#888" }}>{booklog.date}</p>
+          <p style={{ fontSize: "12px", color: "#888", marginRight: "-60px" }}>{booklog.date}</p>
         </div>
       </div>
       {booklog.coverUrl ? (
         <img
           src={booklog.coverUrl}
-          alt={`북로그 대표 이미지`}
+          alt="책 표지"
           style={{
-            width: "175px",
-            height: "125px",
-            objectFit: "cover",
+            maxWidth: "175px",
+            maxHeight: "125px",
+            width: "auto",
+            height: "auto",
+            objectFit: "contain",
             borderRadius: "3px",
             display: "block",
             margin: "2px auto 0",
+            marginLeft: "95px",
           }}
         />
       ) : (

@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
+import defaultAvatar from '../assets/summer.jpg';
 
 function BookclubCard({ bookclub, onClick }) {
-  const [filledCircles, setFilledCircles] = useState(0);
+  const [filledCircles, setFilledCircles] = useState(1);
   const [isClosed, setIsClosed] = useState(false);
 
   useEffect(() => {
     // 모집 인원 실시간 상태
-    setFilledCircles(bookclub.currentMembers || 0);
+    const members = bookclub.currentMembers ?? 0;
+    setFilledCircles(Math.max(1, members));
 
     // 모집 마감 여부 확인
     const today = new Date().toISOString().split('T')[0];
@@ -15,7 +17,7 @@ function BookclubCard({ bookclub, onClick }) {
 
   return (
     <div
-      onClick={onClick}
+      onClick={() => onClick(bookclub)}
       style={{
         background: "#fff",
         border: "1px solid #D9D9D9",
@@ -64,7 +66,33 @@ function BookclubCard({ bookclub, onClick }) {
 
       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
         <div style={{ display: 'flex' }}>
-          <div style={{ width: '25px', height: '25px', borderRadius: '50px', background: '#ddd', marginTop: '7px', marginLeft: '5px' }} />
+        {bookclub.profileImage ? (
+            <img
+              src={bookclub.profileImage}
+              alt="모임장 프로필"
+              style={{
+                width: 25,
+                height: 25,
+                borderRadius: '50%',
+                objectFit: 'cover',
+                marginTop: 7,
+                marginLeft: 5,
+              }}
+            />
+          ) : (
+            <img
+              src={defaultAvatar}
+              alt="기본 프로필"
+              style={{
+                width: 25,
+                height: 25,
+                borderRadius: '50%',
+                objectFit: 'cover',
+                marginTop: 7,
+                marginLeft: 5,
+              }}
+            />
+          )}
           <p style={{ fontSize: '11px', color: '#888', paddingLeft: '7px' }}>{bookclub.nickname}</p>
         </div>
 

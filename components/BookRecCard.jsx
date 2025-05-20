@@ -11,7 +11,7 @@ import '../styles/BookRecCard.css';
 function BookRecCard({ books, onMoreClick }) {
   return (
     <section className="ai-book-rec">
-      <h2 className="ai-book-rec__title">˚₊‧ 이런 책을 좋아하실 것 같아요˚₊‧</h2>
+      <h2 className="ai-book-rec__title">˚₊‧ 이번달은 이 책 어떠세요?˚₊‧</h2>
 
       <ul className="ai-book-rec__list">
         {books.slice(0, 2).map((b, index) => (
@@ -19,7 +19,7 @@ function BookRecCard({ books, onMoreClick }) {
             key={b.id} 
             className={`ai-book-rec__item${index === 1 ? ' reverse' : ''}`}
           >
-            <img className="ai-book-rec__img" src={b.coverUrl} alt={"책 표지 이미지"} />
+            <img className="ai-book-rec__img" src={b.cover} alt={"책 표지 이미지"} />
             <div className="ai-book-rec__text">
               <p>제목&nbsp;: {b.title.length > 20 ? b.title.slice(0, 20) + '...' : b.title}</p>
               <p>작가&nbsp;: {b.author}</p>
