@@ -187,7 +187,7 @@ public class PostService {
 				.imageUrl(post.getImageUrl())
 				.nickname(post.getUser() != null ? post.getUser().getNickname() : "Unknown User") // ✅ 작성자 닉네임
 				.date(post.getCreatedAt() != null
-						? post.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+						? post.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss"))
 						: "Unknown Date") // ✅ 작성일
 				.bookTitle(post.getBook() != null ? post.getBook().getTitle() : "Unknown Book Title") // ✅ 책 제목
 				.bookAuthor(post.getBook() != null ? post.getBook().getAuthor() : "Unknown Author") // ✅ 책 저자
