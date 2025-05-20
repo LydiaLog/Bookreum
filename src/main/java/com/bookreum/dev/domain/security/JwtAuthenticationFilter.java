@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -30,58 +29,68 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String path = request.getRequestURI();
+        log.info("Processing request for path: {}", path);
 
         // 1) 공개 API 경로는 토큰 검사 없이 바로 통과
         if (path.startsWith("/api/auth/")
-                || path.equals("/api/home")
-                || path.equals("/api/aladin/search")
-                || path.equals("/api/books/search")
-                || path.equals("/api/posts/saveBook")
-                || path.equals("/api/clubs/saveBook")
-                || path.equals("/api/clubs/searchBooks")) {
-                filterChain.doFilter(request, response);
-                return;
-            }
+            || path.equals("/api/home")
+            || path.equals("/api/aladin/search")
+            || path.equals("/api/books/search")
+            || path.equals("/api/posts/saveBook")
+            || path.equals("/api/clubs/saveBook")
+            || path.equals("/api/clubs/searchBooks")) {
+            log.info("Public API path, skipping token validation");
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         // 2) 그 외 요청은 헤더에서 Bearer 토큰을 추출하여 유효성 검사
         String header = request.getHeader("Authorization");
         log.info("Authorization header: {}", header);
         
-        if (StringUtils.hasText(header) && header.startsWith("Bearer ")) {
-            String token = header.substring(7);
-            log.info("Extracted token: {}", token);
-            
-            if (jwtTokenProvider.validateToken(token)) {
-                log.info("Token is valid");
-                String kakaoId = null;
-                try {
-                    kakaoId = jwtTokenProvider.getKakaoIdFromToken(token);
-                    log.info("Kakao ID from token: {}", kakaoId);
-                    
-                    UserDetails userDetails = userDetailsService.loadUserByUsername(kakaoId);
-                    UsernamePasswordAuthenticationToken auth =
-                        new UsernamePasswordAuthenticationToken(
-                            userDetails,
-                            null,
-                            userDetails.getAuthorities()
-                        );
-                    SecurityContextHolder.getContext().setAuthentication(auth);
-                    log.info("Authentication set in SecurityContext");
-                } catch (UsernameNotFoundException e) {
-                    log.warn("JWT 토큰의 subject에 해당하는 유저가 없습니다: {}", kakaoId);
-                    SecurityContextHolder.clearContext();
-                } catch (Exception e) {
-                    log.error("JWT 토큰 처리 중 오류 발생: {}", e.getMessage(), e);
-                    SecurityContextHolder.clearContext();
-                }
-            } else {
-                log.warn("Token validation failed");
-            }
-        } else {
+        if (!StringUtils.hasText(header) || !header.startsWith("Bearer ")) {
             log.warn("No valid Authorization header found");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("No token provided");
+            return;
         }
 
-        // 3) 다음 필터 실행
-        filterChain.doFilter(request, response);
+        String token = header.substring(7);
+        log.info("Extracted token: {}", token);
+        
+        if (!jwtTokenProvider.validateToken(token)) {
+            log.warn("Token validation failed");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Invalid token");
+            return;
+        }
+
+        try {
+            String kakaoId = jwtTokenProvider.getKakaoIdFromToken(token);
+            log.info("Kakao ID from token: {}", kakaoId);
+            
+            UserDetails userDetails = userDetailsService.loadUserByUsername(kakaoId);
+            UsernamePasswordAuthenticationToken auth =
+                new UsernamePasswordAuthenticationToken(
+                    userDetails,
+                    null,
+                    userDetails.getAuthorities()
+                );
+            SecurityContextHolder.getContext().setAuthentication(auth);
+            log.info("Authentication set in SecurityContext");
+            
+            // 인증 성공 시 다음 필터로 진행
+            filterChain.doFilter(request, response);
+        } catch (UsernameNotFoundException e) {
+            log.warn("JWT 토큰의 subject에 해당하는 유저가 없습니다: {}", e.getMessage());
+            SecurityContextHolder.clearContext();
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("User not found");
+        } catch (Exception e) {
+            log.error("JWT 토큰 처리 중 오류 발생: {}", e.getMessage(), e);
+            SecurityContextHolder.clearContext();
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Token processing error");
+        }
     }
 }

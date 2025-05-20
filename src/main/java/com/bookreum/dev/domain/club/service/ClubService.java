@@ -2,6 +2,7 @@ package com.bookreum.dev.domain.club.service;
 
 import com.bookreum.dev.domain.club.dto.ClubDTO;
 import com.bookreum.dev.domain.club.entity.ClubEntity;
+import com.bookreum.dev.domain.club.entity.ClubStatus;
 import com.bookreum.dev.domain.club.repository.ClubRepository;
 import com.bookreum.dev.global.FileStorageService;
 
@@ -9,11 +10,12 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -98,13 +100,43 @@ public class ClubService {
     public Page<ClubDTO> listOrSearchClubs(String keyword, String sort, Pageable pageable) {
         Page<ClubEntity> page;
         if (keyword == null || keyword.isBlank()) {
-            page = clubRepository.findAll(pageable);
+        	 page = clubRepository.findAllWithBook(pageable);
         } else if ("oldest".equalsIgnoreCase(sort)) {
-            page = clubRepository.searchByKeywordOrderByOldest(keyword, pageable);
+        	page = clubRepository.searchByKeywordOrderByOldestWithBook(keyword, pageable);
         } else {
-            page = clubRepository.searchByKeywordOrderByLatest(keyword, pageable);
+        	page = clubRepository.searchByKeywordOrderByLatestWithBook(keyword, pageable);
         }
         return page.map(ClubDTO::fromEntity);
     }
     
+    /**
+     * 마감된 클럽의 상태를 업데이트합니다.
+     * - 신청 마감일이 지난 경우
+     * - 최대 참가 인원에 도달한 경우
+     */
+    @Transactional
+    public void updateClosedClubs() {
+        LocalDateTime now = LocalDateTime.now();
+        List<ClubEntity> clubsToClose = clubRepository.findByStatusAndApplicationDeadlineBefore(
+            ClubStatus.OPEN, now);
+        
+        for (ClubEntity club : clubsToClose) {
+            club.setStatus(ClubStatus.CLOSED);
+        }
+        clubRepository.saveAll(clubsToClose);
+    }
+
+    /**
+     * 클럽의 참가 인원을 확인하고 필요시 상태를 업데이트합니다.
+     */
+    @Transactional
+    public void checkAndUpdateClubStatus(ClubEntity club) {
+        long currentParticipants = club.getApplications().size();
+        if (currentParticipants >= club.getMaxParticipants()) {
+            club.setStatus(ClubStatus.CLOSED);
+            clubRepository.save(club);
+        }
+    }
+    
 }
+

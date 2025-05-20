@@ -35,6 +35,8 @@ public class ClubDTO {
     private Integer createdById;
     private LocalDateTime createdAt;
     
+    private String createdByNickname;
+    private String createdByProfileImageUrl;
     private String coverImageUrl;
 
     public static ClubDTO fromEntity(ClubEntity e) {
@@ -64,6 +66,8 @@ public class ClubDTO {
             .bookAuthor(e.getBook() != null ? e.getBook().getAuthor() : null)
             .createdById(e.getUser() != null ? e.getUser().getId() : null)
             .createdAt(e.getCreatedAt())
+            .createdByNickname(e.getUser() != null ? e.getUser().getNickname() : null)
+            .createdByProfileImageUrl(e.getUser() != null ? e.getUser().getProfileImage() : null)
             .coverImageUrl(e.getCoverImageUrl())
             .build();
     }

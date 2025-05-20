@@ -39,7 +39,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://10.50.216.86:5173"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList(
             "Authorization",
@@ -113,6 +113,8 @@ public class SecurityConfig {
               .requestMatchers(HttpMethod.POST, "/api/clubs").authenticated()
               .requestMatchers(HttpMethod.PUT, "/api/clubs/{id}").authenticated()
               .requestMatchers(HttpMethod.DELETE, "/api/clubs/{id}").authenticated()
+              .requestMatchers(HttpMethod.POST, "/api/clubs/{id}/join").authenticated()
+              .requestMatchers(HttpMethod.POST, "/api/clubs/{id}/applications").authenticated()
               
               // 북로그 좋아요, 댓글
               .requestMatchers(HttpMethod.POST, "/api/posts/{id}/hearts").authenticated()

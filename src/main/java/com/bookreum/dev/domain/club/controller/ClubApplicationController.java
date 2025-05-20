@@ -57,7 +57,7 @@ public class ClubApplicationController {
      */
     @PostMapping
     public ResponseEntity<ClubApplicationDTO> apply(
-            @PathVariable Integer clubId,
+            @PathVariable("clubId") Integer clubId,
             @RequestBody @Valid ApplicationRequest request
     ) {
         ClubEntity club = clubService.getClub(clubId);
@@ -76,7 +76,7 @@ public class ClubApplicationController {
      */
     @DeleteMapping
     public ResponseEntity<Void> cancel(
-            @PathVariable Integer clubId,
+            @PathVariable("clubId") Integer clubId,
             @RequestBody @Valid CancelRequest request
     ) {
         ClubEntity club = clubService.getClub(clubId);
@@ -92,7 +92,9 @@ public class ClubApplicationController {
      * @return 신청 DTO 리스트
      */
     @GetMapping
-    public ResponseEntity<List<ClubApplicationDTO>> listApplications(@PathVariable Integer clubId) {
+    public ResponseEntity<List<ClubApplicationDTO>> listApplications(
+            @PathVariable("clubId") Integer clubId
+    ) {
         ClubEntity club = clubService.getClub(clubId);
         List<ClubApplicationDTO> dtos = applicationService.getApplications(club).stream()
                 .map(ClubApplicationDTO::fromEntity)
@@ -108,7 +110,7 @@ public class ClubApplicationController {
      */
     @GetMapping("/status")
     public ResponseEntity<Boolean> checkStatus(
-            @PathVariable Integer clubId,
+            @PathVariable("clubId") Integer clubId,
             @RequestParam @NotNull Integer userId
     ) {
         ClubEntity club = clubService.getClub(clubId);
