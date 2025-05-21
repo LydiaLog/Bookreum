@@ -5,13 +5,13 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 
@@ -24,40 +24,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain)
-            throws ServletException, IOException {
-
+                                     HttpServletResponse response,
+                                     FilterChain filterChain)
+              throws ServletException, IOException {
+        
         String path = request.getRequestURI();
         String method = request.getMethod();
-        log.info("Processing request for path: {} {}", method, path);
+        log.info("Processing request for path: {} [{}]", path, method);
 
-     // (추가) 클럽 조회용 GET 요청은 토큰 검사 없이 통과
-        if ("GET".equalsIgnoreCase(method) && path.startsWith("/api/clubs")) {
-            log.info("Public GET /api/clubs/** path, skipping token validation");
-            filterChain.doFilter(request, response);
-            return;
-        }
-        
         // 1) 공개 API 경로는 토큰 검사 없이 바로 통과
         if (path.startsWith("/api/auth/")
             || path.equals("/api/home")
-            || path.startsWith("/api/aladin/search")
-            || path.startsWith("/api/books/search")
-            || path.startsWith("/api/posts/saveBook")
-            || path.startsWith("/api/clubs/saveBook")
-            || path.startsWith("/api/clubs/searchBooks")
+            || path.equals("/api/aladin/search")
+            || path.equals("/api/books/search")
+            || path.equals("/api/posts/saveBook")
+            || path.equals("/api/clubs/saveBook")
+            || path.equals("/api/clubs/searchBooks")
             || path.startsWith("/api/clubs/public/")  
             || path.equals("/api/clubs/public")       
-            || (method.equals("GET") && (
-            	path.equals("/api/clubs") ||
-                path.startsWith("/api/clubs/") ||
-                path.matches("/api/clubs/\\d+") ||
-                path.startsWith("/api/posts/") ||
-                path.startsWith("/api/books/") ||
-                path.startsWith("/api/posts/comments/")
-            ))
-        ) {
+            || path.equals("/api/clubs/public/latest")
+            || path.equals("/api/clubs/public?includeBook=true")
+            || (method.equals("GET") && path.equals("/api/clubs"))
+            || (method.equals("GET") && path.matches("/api/clubs/\\d+"))) {
             log.info("Public API path, skipping token validation");
             filterChain.doFilter(request, response);
             return;

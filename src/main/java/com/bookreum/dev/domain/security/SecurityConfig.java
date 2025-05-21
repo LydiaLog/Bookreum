@@ -110,6 +110,7 @@ public class SecurityConfig {
               
               // 북클럽 조회
               .requestMatchers(HttpMethod.GET, "/api/clubs/public/**").permitAll()
+              .requestMatchers(HttpMethod.GET, "/api/clubs/public/").permitAll()
               .requestMatchers(HttpMethod.GET, "/api/clubs").permitAll()
               .requestMatchers(HttpMethod.GET, "/api/clubs/{id}").permitAll()
               .requestMatchers(HttpMethod.GET, "/api/clubs/searchBooks").permitAll()

@@ -13,19 +13,68 @@ import com.bookreum.dev.domain.club.entity.ClubEntity;
 import com.bookreum.dev.domain.club.entity.ClubStatus;
 
 @Repository
-public interface  ClubRepository extends JpaRepository<ClubEntity, Integer> {
-	// ... existing code ...
+public interface ClubRepository extends JpaRepository<ClubEntity, Integer> {
     /**
-     * 클럽 목록 조회 시 책 정보를 함께 가져옵니다.
+     * 키워드 검색 (제목·설명) + 최신순 정렬 (페이징)
      */
-    @Query("SELECT DISTINCT c FROM ClubEntity c LEFT JOIN FETCH c.book LEFT JOIN FETCH c.user WHERE c.book IS NOT NULL")
-    Page<ClubEntity> findAllWithBook(Pageable pageable);
+    @Query("SELECT c FROM ClubEntity c " +
+           "WHERE LOWER(c.title)       LIKE LOWER(CONCAT('%', :kw, '%')) " +
+           "   OR LOWER(c.description) LIKE LOWER(CONCAT('%', :kw, '%')) " +
+           "ORDER BY c.createdAt DESC")
+    Page<ClubEntity> searchByKeywordOrderByLatest(
+        @Param("kw") String keyword,
+        Pageable pageable
+    );
 
     /**
-     * 키워드 검색 시 책 정보를 함께 가져옵니다.
+     * 키워드 검색 (제목·설명) + 오래된순 정렬 (페이징)
      */
-    @Query("SELECT DISTINCT c FROM ClubEntity c LEFT JOIN FETCH c.book LEFT JOIN FETCH c.user " +
-           "WHERE (LOWER(c.title) LIKE LOWER(CONCAT('%', :kw, '%')) " +
+    @Query("SELECT c FROM ClubEntity c " +
+           "WHERE LOWER(c.title)       LIKE LOWER(CONCAT('%', :kw, '%')) " +
+           "   OR LOWER(c.description) LIKE LOWER(CONCAT('%', :kw, '%')) " +
+           "ORDER BY c.createdAt ASC")
+    Page<ClubEntity> searchByKeywordOrderByOldest(
+        @Param("kw") String keyword,
+        Pageable pageable
+    );
+
+    /**
+     * 모든 북클럽 조회 (최신순, 책 정보 포함)
+     */
+    @Query("SELECT DISTINCT c FROM ClubEntity c " +
+            "LEFT JOIN FETCH c.book " +
+            "LEFT JOIN FETCH c.user " +
+            "WHERE c.book IS NOT NULL " +
+            "ORDER BY c.createdAt DESC")
+     Page<ClubEntity> findAllWithBook(Pageable pageable);
+
+    /**
+     * 모든 북클럽 조회 (오래된순, 책 정보 포함)
+     */
+    @Query("SELECT DISTINCT c FROM ClubEntity c " +
+           "LEFT JOIN FETCH c.book " +
+           "LEFT JOIN FETCH c.user " +
+           "WHERE c.book IS NOT NULL " +
+           "ORDER BY c.createdAt ASC")
+    Page<ClubEntity> findAllWithBookOldest(Pageable pageable);
+
+    /**
+     * 최신 북클럽 조회 (책 정보 포함)
+     */
+    @Query("SELECT DISTINCT c FROM ClubEntity c " +
+           "LEFT JOIN FETCH c.book " +
+           "LEFT JOIN FETCH c.user " +
+           "WHERE c.book IS NOT NULL " +
+           "ORDER BY c.createdAt DESC")
+    Page<ClubEntity> findAllByOrderByCreatedAtDesc(Pageable pageable);
+
+    /**
+     * 키워드 검색 (제목·설명) + 최신순 정렬 (페이징, 책 정보 포함)
+     */
+    @Query("SELECT DISTINCT c FROM ClubEntity c " +
+           "LEFT JOIN FETCH c.book " +
+           "LEFT JOIN FETCH c.user " +
+           "WHERE (LOWER(c.title)       LIKE LOWER(CONCAT('%', :kw, '%')) " +
            "   OR LOWER(c.description) LIKE LOWER(CONCAT('%', :kw, '%'))) " +
            "   AND c.book IS NOT NULL " +
            "ORDER BY c.createdAt DESC")
@@ -35,10 +84,12 @@ public interface  ClubRepository extends JpaRepository<ClubEntity, Integer> {
     );
 
     /**
-     * 키워드 검색 시 책 정보를 함께 가져옵니다 (오래된순).
+     * 키워드 검색 (제목·설명) + 오래된순 정렬 (페이징, 책 정보 포함)
      */
-    @Query("SELECT DISTINCT c FROM ClubEntity c LEFT JOIN FETCH c.book LEFT JOIN FETCH c.user " +
-           "WHERE (LOWER(c.title) LIKE LOWER(CONCAT('%', :kw, '%')) " +
+    @Query("SELECT DISTINCT c FROM ClubEntity c " +
+           "LEFT JOIN FETCH c.book " +
+           "LEFT JOIN FETCH c.user " +
+           "WHERE (LOWER(c.title)       LIKE LOWER(CONCAT('%', :kw, '%')) " +
            "   OR LOWER(c.description) LIKE LOWER(CONCAT('%', :kw, '%'))) " +
            "   AND c.book IS NOT NULL " +
            "ORDER BY c.createdAt ASC")
@@ -46,19 +97,97 @@ public interface  ClubRepository extends JpaRepository<ClubEntity, Integer> {
         @Param("kw") String keyword,
         Pageable pageable
     );
+
     /**
-     * 마감일이 지난 OPEN 상태의 클럽을 찾습니다.
+     * 마감된 북클럽 조회
      */
-    List<ClubEntity> findByStatusAndApplicationDeadlineBefore(
-        ClubStatus status, LocalDateTime deadline);
-    
+    @Query("SELECT c FROM ClubEntity c " +
+           "WHERE c.status = 'CLOSED' " +
+           "ORDER BY c.createdAt DESC")
+    List<ClubEntity> findAllClosedClubs();
+
+    /**
+     * 마감된 북클럽 조회 (페이징)
+     */
+    @Query("SELECT c FROM ClubEntity c " +
+           "WHERE c.status = 'CLOSED' " +
+           "ORDER BY c.createdAt DESC")
+    Page<ClubEntity> findAllClosedClubs(Pageable pageable);
+
+    /**
+     * 마감된 북클럽 조회 (책 정보 포함)
+     */
     @Query("SELECT DISTINCT c FROM ClubEntity c " +
-            "LEFT JOIN FETCH c.book " +
-            "LEFT JOIN FETCH c.user " +
-            "WHERE c.book IS NOT NULL " +
-            "ORDER BY c.createdAt ASC")
-     Page<ClubEntity> findAllWithBookOldest(Pageable pageable);
+           "LEFT JOIN FETCH c.book " +
+           "LEFT JOIN FETCH c.user " +
+           "WHERE c.status = 'CLOSED' " +
+           "ORDER BY c.createdAt DESC")
+    Page<ClubEntity> findAllClosedClubsWithBook(Pageable pageable);
+
+    /**
+     * 모든 북클럽 조회 (최신순, 책 정보 포함, 상태 필터링)
+     */
+    @Query("SELECT DISTINCT c FROM ClubEntity c " +
+           "LEFT JOIN FETCH c.book " +
+           "LEFT JOIN FETCH c.user " +
+           "WHERE c.book IS NOT NULL " +
+           "AND (:status IS NULL OR c.status = :status) " +
+           "ORDER BY c.createdAt DESC")
+    Page<ClubEntity> findAllWithBookAndStatus(@Param("status") ClubStatus status, Pageable pageable);
+
+    /**
+     * 모든 북클럽 조회 (오래된순, 책 정보 포함, 상태 필터링)
+     */
+    @Query("SELECT DISTINCT c FROM ClubEntity c " +
+           "LEFT JOIN FETCH c.book " +
+           "LEFT JOIN FETCH c.user " +
+           "WHERE c.book IS NOT NULL " +
+           "AND (:status IS NULL OR c.status = :status) " +
+           "ORDER BY c.createdAt ASC")
+    Page<ClubEntity> findAllWithBookOldestAndStatus(@Param("status") ClubStatus status, Pageable pageable);
+
+    /**
+     * 키워드 검색 (제목·설명) + 최신순 정렬 (페이징, 책 정보 포함, 상태 필터링)
+     */
+    @Query("SELECT DISTINCT c FROM ClubEntity c " +
+           "LEFT JOIN FETCH c.book " +
+           "LEFT JOIN FETCH c.user " +
+           "WHERE (LOWER(c.title)       LIKE LOWER(CONCAT('%', :kw, '%')) " +
+           "   OR LOWER(c.description) LIKE LOWER(CONCAT('%', :kw, '%'))) " +
+           "   AND c.book IS NOT NULL " +
+           "   AND (:status IS NULL OR c.status = :status) " +
+           "ORDER BY c.createdAt DESC")
+    Page<ClubEntity> searchByKeywordOrderByLatestWithBookAndStatus(
+        @Param("kw") String keyword,
+        @Param("status") ClubStatus status,
+        Pageable pageable
+    );
+
+    /**
+     * 키워드 검색 (제목·설명) + 오래된순 정렬 (페이징, 책 정보 포함, 상태 필터링)
+     */
+    @Query("SELECT DISTINCT c FROM ClubEntity c " +
+           "LEFT JOIN FETCH c.book " +
+           "LEFT JOIN FETCH c.user " +
+           "WHERE (LOWER(c.title)       LIKE LOWER(CONCAT('%', :kw, '%')) " +
+           "   OR LOWER(c.description) LIKE LOWER(CONCAT('%', :kw, '%'))) " +
+           "   AND c.book IS NOT NULL " +
+           "   AND (:status IS NULL OR c.status = :status) " +
+           "ORDER BY c.createdAt ASC")
+    Page<ClubEntity> searchByKeywordOrderByOldestWithBookAndStatus(
+        @Param("kw") String keyword,
+        @Param("status") ClubStatus status,
+        Pageable pageable
+    );
     
-    Page<ClubEntity> findAllByOrderByCreatedAtDesc(Pageable pageable);
+    /**
+     * 북클럽 ID로 조회 (책 정보 포함)
+     */
+    @Query("SELECT DISTINCT c FROM ClubEntity c " +
+           "LEFT JOIN FETCH c.book " +
+           "LEFT JOIN FETCH c.user " +
+           "WHERE c.id = :id")
+    Optional<ClubEntity> findByIdWithBook(@Param("id") Integer id);
+}
 
 }
