@@ -31,15 +31,20 @@ public class ChatMessageController {
      * @return 메시지 DTO 리스트
      */
     @GetMapping
-    public ResponseEntity<List<ChatMessageDTO>> getMessages(
-            @PathVariable Integer clubId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+    public ResponseEntity<?> getMessages(
+            @PathVariable(name = "clubId") Integer clubId,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size
     ) {
-        List<ChatMessageDTO> dtos = messageService.getMessages(clubId, page, size).stream()
-                .map(ChatMessageDTO::fromEntity)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(dtos);
+        try {
+            List<ChatMessageDTO> dtos = messageService.getMessages(clubId, page, size).stream()
+                    .map(ChatMessageDTO::fromEntity)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(dtos);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("존재하지 않는 모임입니다.");
+        }
     }
 
     /**
@@ -49,13 +54,18 @@ public class ChatMessageController {
      * @return 저장된 메시지 DTO와 HTTP 201
      */
     @PostMapping
-    public ResponseEntity<ChatMessageDTO> sendMessage(
-            @PathVariable Integer clubId,
+    public ResponseEntity<?> sendMessage(
+            @PathVariable(name = "clubId") Integer clubId,
             @RequestBody @Valid ChatMessageDTO dto
     ) {
-        ChatMessageEntity saved = messageService.sendMessage(clubId, dto.getUserId(), dto.getContent());
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ChatMessageDTO.fromEntity(saved));
+        try {
+            ChatMessageEntity saved = messageService.sendMessage(clubId, dto.getUserId(), dto.getContent());
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(ChatMessageDTO.fromEntity(saved));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("존재하지 않는 모임입니다.");
+        }
     }
 
     /**
@@ -65,12 +75,17 @@ public class ChatMessageController {
      * @return HTTP 204
      */
     @DeleteMapping("/{messageId}")
-    public ResponseEntity<Void> deleteMessage(
-            @PathVariable Integer clubId,
-            @PathVariable Integer messageId
+    public ResponseEntity<?> deleteMessage(
+            @PathVariable(name = "clubId") Integer clubId,
+            @PathVariable(name = "messageId") Integer messageId
     ) {
-        messageService.deleteMessage(messageId);
-        return ResponseEntity.noContent().build();
+        try {
+            messageService.deleteMessage(messageId);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("존재하지 않는 메시지입니다.");
+        }
     }
 
     /**
@@ -79,8 +94,13 @@ public class ChatMessageController {
      * @return HTTP 204
      */
     @DeleteMapping
-    public ResponseEntity<Void> deleteAllMessages(@PathVariable Integer clubId) {
-        messageService.deleteAllMessagesInRoom(clubId);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> deleteAllMessages(@PathVariable(name = "clubId") Integer clubId) {
+        try {
+            messageService.deleteAllMessagesInRoom(clubId);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("존재하지 않는 모임입니다.");
+        }
     }
 }

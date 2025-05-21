@@ -1,0 +1,49 @@
+.booklog-card {
+    display: flex;
+    width: 750px;
+    height: 150px;
+    padding: 1rem;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    background-color: #fff;
+    gap: 1rem;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s;
+}
+
+.booklog-card:hover {
+    transform: translateY(-2px);
+}
+
+.booklog-card__image {
+    width: 110px;
+    height: 145px;
+    object-fit: cover;
+    border-radius: 6px;
+    background-color: #eee;
+}
+  
+.booklog-card__content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+  
+.booklog-card__title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+}
+  
+.booklog-card__meta {
+    font-size: 0.85rem;
+    color: #888;
+    margin: 0.3rem 0;
+}
+  
+.booklog-card__text {
+    font-size: 0.9rem;
+    color: #333;
+    line-height: 1.4;
+}  

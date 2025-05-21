@@ -39,7 +39,13 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+        configuration.setAllowedOrigins(Arrays.asList(
+                "http://localhost:5173",
+                "http://127.0.0.1:5173",
+                "http://10.50.216.86:5173",
+                "http://192.168.0.1:5173",
+                "http://192.168.1.1:5173"
+            ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList(
             "Authorization",
@@ -50,6 +56,7 @@ public class SecurityConfig {
             "Access-Control-Request-Method",
             "Access-Control-Request-Headers"
         ));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
 
@@ -84,6 +91,11 @@ public class SecurityConfig {
           // 5) URL 권한 설정
           .authorizeHttpRequests(auth -> auth
         	  .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+        	  
+        	// 카카오 로그인 관련 엔드포인트
+              .requestMatchers("/api/auth/kakao", "/api/auth/kakao/**").permitAll()
+              .requestMatchers("/api/auth/refresh", "/api/auth/refresh/**").permitAll()
+              
               // 공개 API
               .requestMatchers("/api/auth/**", "/api/home").permitAll()
               .requestMatchers(HttpMethod.GET, "/api/aladin/**").permitAll()
@@ -97,8 +109,18 @@ public class SecurityConfig {
               .requestMatchers(HttpMethod.GET, "/api/posts/comments/{postId}").permitAll()
               
               // 북클럽 조회
-              .requestMatchers(HttpMethod.GET, "/api/clubs/**").permitAll()
+              .requestMatchers(HttpMethod.GET, "/api/clubs/public/**").permitAll()
+              .requestMatchers(HttpMethod.GET, "/api/clubs").permitAll()
+              .requestMatchers(HttpMethod.GET, "/api/clubs/{id}").permitAll()
               .requestMatchers(HttpMethod.GET, "/api/clubs/searchBooks").permitAll()
+              .requestMatchers(HttpMethod.POST, "/api/clubs/{id}/join").authenticated()
+              .requestMatchers(HttpMethod.POST, "/api/clubs/{id}/applications").authenticated()
+              
+              
+              // 채팅 관련 API
+              .requestMatchers(HttpMethod.GET, "/api/clubs/{id}/messages").authenticated()
+              .requestMatchers(HttpMethod.POST, "/api/clubs/{id}/messages").authenticated()
+              .requestMatchers(HttpMethod.DELETE, "/api/clubs/{id}/messages/{messageId}").authenticated()
               
               // 책 저장 API
               .requestMatchers(HttpMethod.POST, "/api/posts/saveBook").permitAll()

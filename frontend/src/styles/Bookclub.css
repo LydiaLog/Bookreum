@@ -1,0 +1,7 @@
+.bookclublist {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* ✅ 한 줄에 3개 */
+    gap: 24px;
+    width: 1025px;
+    padding: 10px 0;
+}

@@ -1,0 +1,89 @@
+/* 레이아웃 */
+.club-detail {
+    max-width: 720px;
+    margin: 2rem auto;
+    padding: 1rem;
+}
+.club-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+.club-sub {
+    color: #666;
+    margin-bottom: 1rem;
+}
+  
+/* 채팅 박스 */
+.chat-box {
+    height: 400px;             /* 필요에 맞게 조정 */
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 1rem;
+    overflow-y: auto;
+    background: #fafafa;
+}
+  
+/* 메시지 행 */
+.message-row {
+    display: flex;
+    margin-bottom: 8px;
+}
+.message-row.other {
+    justify-content: flex-start;
+}
+.message-row.my {
+    justify-content: flex-end;
+}
+  
+/* 닉네임 (상대방만 표시) */
+.msg-nick {
+    font-size: 0.75rem;
+    color: #555;
+    margin-right: 6px;
+    align-self: flex-end;
+}
+  
+/* 말풍선 */
+.msg-bubble {
+    max-width: 70%;
+    padding: 8px 12px;
+    border-radius: 14px;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    white-space: pre-wrap;
+}
+.message-row.other .msg-bubble {
+    background: #e5e5ea;
+    color: #000;
+    border-bottom-left-radius: 0;
+}
+.message-row.my .msg-bubble {
+    background: #B4C9A4;
+    color: #fff;
+    border-bottom-right-radius: 0;
+}
+  
+/* 입력창 고정 하단 */
+.chat-input {
+    display: flex;
+    gap: 8px;
+    margin-top: 1rem;
+}
+.chat-input textarea {
+    flex: 1;
+    resize: none;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 8px;
+    font-size: 0.95rem;
+    font-family: 'Nanum Gothic', sans-serif;
+    height: 42px;          /* 한 줄 */
+}
+.chat-input button {
+    background: #8a9b78;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0 18px;
+    cursor: pointer;
+}  

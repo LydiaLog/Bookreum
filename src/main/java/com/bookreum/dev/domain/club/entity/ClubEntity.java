@@ -79,4 +79,18 @@ public class ClubEntity {
    /** 모임 대표 이미지 URL */
    @Column(name = "club_cover_image_url", length = 255)
    private String coverImageUrl;
+   
+//   상태값 확인 메소드들 참가인원과 상태 변경 메소드
+   public void updateStatus() {
+	    boolean deadlinePassed = this.applicationDeadline != null &&
+	                              LocalDateTime.now().isAfter(this.applicationDeadline);
+	    boolean full = getCurrentParticipants() >= this.maxParticipants;
+
+	    this.status = (deadlinePassed || full) ? ClubStatus.CLOSED : ClubStatus.OPEN;
+	}
+
+	public int getCurrentParticipants() {
+	    return this.applications != null ? this.applications.size() : 0;
+	}
+
 }

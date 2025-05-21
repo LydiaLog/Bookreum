@@ -1,0 +1,141 @@
+.home-contents {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 2rem 3rem;
+    gap: 2rem;
+}
+
+.home-left {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+/* 📚 북클럽 섹션 */
+.club-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding-top: 1.5rem;
+}
+  
+/* 북클럽 제목 */
+.club-section__title-line {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.3rem;
+}
+
+.club-section__title-line h2 {
+    font-size: 1.3rem;
+    font-weight: bold;
+    white-space: nowrap;
+    margin: 0;
+}
+
+.club-section__title-line hr {
+    flex-grow: 1;
+    height: 1px;
+    background-color: #ccc;
+    border: none;
+}
+
+.club-section__subtitle {
+    font-size: 0.9rem;
+    text-align: center;
+    color: #555;
+    margin-bottom: 1rem;
+    margin-top: 0.5rem;
+    font-weight: bold;
+}
+  
+/* 북클럽 카드 2개 가로 배치 */
+.club-section__cards {
+    display: flex;
+    flex-direction: row;
+    gap: 5rem;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+}
+  
+/* 더보기 버튼 */
+  .club-section__more {
+    display: flex;
+    justify-content: flex-end;
+    padding-right: 0.5rem;
+}
+
+.booklog-section__more {
+    display: flex;
+    justify-content: flex-end;
+    padding-right: 1rem;
+    margin-top: 0.5rem;
+}
+
+.club-section__more button,
+.booklog-section__more button {
+    background: none;
+    border: none;
+    font: inherit;
+    color: #2c4b2c;
+    cursor: pointer;
+    outline: none;
+}
+
+.club-section__more button:focus,
+.booklog-section__more button:focus,
+.club-section__more button:focus-visible,
+.booklog-section__more button:focus-visible {
+    outline: none;
+    box-shadow: none;
+}
+
+/* 북로그 */
+.booklog-section {
+    margin-top: 1rem;
+}
+  
+.booklog-section__title-line {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.3rem;
+}
+  
+.booklog-section__title-line h2 {
+    font-size: 1.2rem;
+    font-weight: bold;
+    white-space: nowrap;
+    margin: 0;
+}
+  
+.booklog-section__title-line hr {
+    flex-grow: 1;
+    height: 1px;
+    background-color: #ccc;
+    border: none;
+}
+  
+.booklog-section__subtitle {
+    font-size: 0.9rem;
+    text-align: center;
+    color: #555;
+    margin-bottom: 1rem;
+    font-weight: bold;
+}
+  
+.booklog-section__cards {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    align-items: center;
+}  
+  
+/* 🤖 AI 추천 카드 오른쪽 정렬 */
+.rec-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+}  
