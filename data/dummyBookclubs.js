@@ -17,7 +17,7 @@ const dummyBookclubs = [
     book: '소크라테스의 변명',
     author: '플라톤',
     nickname: '송만두',
-    date: '2025-05-13',
+    date: '2025-05-17',
     capacity: 4,
     currentMembers: 1
   },
