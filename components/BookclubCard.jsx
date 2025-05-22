@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import defaultAvatar from '../assets/summer.jpg';
+import defaultAvatar from '../assets/profile.jpg';
 
 function BookclubCard({ bookclub, onClick }) {
   const [filledCircles, setFilledCircles] = useState(1);
@@ -62,13 +62,13 @@ function BookclubCard({ bookclub, onClick }) {
       )}
 
       <h3 style={{ fontSize: '16px', fontWeight: 'bold', margin: '4px 0 0 0', paddingLeft: '10px' }}>{bookclub.title}</h3>
-      <p style={{ fontSize: '11px', color: '#666', margin: '0', paddingLeft: '10px' }}>{bookclub.book} | {bookclub.author}</p>
+      <p style={{ fontSize: '11px', color: '#666', margin: '0', paddingLeft: '10px', width: '280px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{bookclub.bookTitle} | {bookclub.bookAuthor}</p>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
         <div style={{ display: 'flex' }}>
-        {bookclub.profileImage ? (
+        {bookclub.createdByProfileImageUrl ? (
             <img
-              src={bookclub.profileImage}
+              src={bookclub.createdByProfileImageUrl}
               alt="모임장 프로필"
               style={{
                 width: 25,
@@ -93,7 +93,7 @@ function BookclubCard({ bookclub, onClick }) {
               }}
             />
           )}
-          <p style={{ fontSize: '11px', color: '#888', paddingLeft: '7px' }}>{bookclub.nickname}</p>
+          <p style={{ fontSize: '11px', color: '#888', paddingLeft: '7px' }}>{bookclub.createdByNickname}</p>
         </div>
 
         {isClosed ? (
