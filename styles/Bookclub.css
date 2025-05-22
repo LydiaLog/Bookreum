@@ -1,7 +1,23 @@
 .bookclublist {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* ✅ 한 줄에 3개 */
+    grid-template-columns: repeat(3, 1fr);
     gap: 24px;
     width: 1025px;
     padding: 10px 0;
+    min-height: 500px;
 }
+  
+/* 빈 상태에도 grid 유지 (정렬 유지) */
+  .bookclublist.empty {
+    position: relative;
+}
+  
+/* "검색 결과 없음" 메시지 */
+.no-results-message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #555;
+    font-size: 16px;
+}  

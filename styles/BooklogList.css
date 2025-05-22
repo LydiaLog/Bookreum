@@ -1,4 +1,35 @@
-/* 이 파일이 필요할지 필요 없을지 아직 모르겠으니까 일단 두겠음 */
+/* BooklogList.css */
+
+/* 검색바 + 정렬 + 글쓰기 영역 */
+.booklog-toolbar {
+  width: 920px;          /* 그대로 두거나 100% 로 변경 */
+  display: flex;
+  justify-content: flex-start;  /* 왼쪽 정렬 */
+  align-items: flex-end;
+  margin-top: 20px;
+}
+
+/* 오른쪽 묶음 */
+.toolbar-right {
+  margin-left: auto;     /* ✅ 남은 공간 전부 밀어냄 */
+  display: flex;
+  gap: 10px;
+}
+
 .bookloglist {
-  width: 100%;
+  display: flex;
+  flex-direction: column;   /* 1열 세로 배열 */
+  gap: 16px;
+  margin-top: 24px;         /* ✅ 툴바와 간격 확보 */
+  min-height: 320px;        /* ✅ 카드 유무와 무관하게 공간 확보 */
+}
+
+.bookloglist.empty {
+  justify-content: center;  /* 메시지를 가운데로 */
+  align-items: center;
+}
+
+.no-results-text {
+  font-size: 15px;
+  color: #666;
 }
