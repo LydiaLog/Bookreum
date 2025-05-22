@@ -8,6 +8,8 @@ import Pagination from '../components/Pagination';
 import '../styles/Global.css';
 import '../styles/BooklogList.css';
 
+// import dummyBooklogs from '../data/dummyBooklogs';
+
 function BooklogList() {
   const navigate = useNavigate();
 
@@ -33,18 +35,30 @@ function BooklogList() {
 
   /* ===== 1. DB 로부터 글 목록 불러오기 ===== */
   useEffect(() => {
-    (async () => {
-      try {
-        const { data } = await api.get('/api/home'); // [{id, title, content, date, bookTitle, bookAuthor, coverUrl, nickname}]
-        setLogs(data);
-      } catch (err) {
-        console.error('Failed to load booklogs:', err);
-        setError('북로그를 불러오지 못했습니다.');
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
+     (async () => {
+       try {
+         const { data } = await api.get('/api/home'); // [{id, title, content, date, bookTitle, bookAuthor, coverUrl, nickname}]
+         setLogs(data);
+       } catch (err) {
+         console.error('Failed to load booklogs:', err);
+         setError('북로그를 불러오지 못했습니다.');
+       } finally {
+         setLoading(false);
+       }
+     })();
+   }, []);
+
+  { /* useEffect(() => {
+    try {
+      // 더미 데이터 불러오기
+      setLogs(dummyBooklogs); 
+    } catch (err) {
+      console.error('Failed to load dummy booklogs:', err);
+      setError('북로그를 불러오지 못했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  }, []); */ }
 
   /* ===== 2. 검색 + 정렬 + 페이지네이션 처리 ===== */
   const { pageData, totalPages } = useMemo(() => {
@@ -83,21 +97,30 @@ function BooklogList() {
 
       <div style={{ marginLeft: "18%" }}>
         {/* 검색 / 정렬 / 글쓰기 */}
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-end', marginTop: "20px", }}>
+        <div className="booklog-toolbar">
           <SearchBar
             value={query}
             onChange={e => setQuery(e.target.value)}
             onSearch={commitSearch}
           />
-          <div style={{ display:'flex', gap: "10px",marginRight: "10px" }}>
+
+          <div className="toolbar-right">
             <SortDropdown
               value={sortOption}
               onChange={e => { setSortOption(e.target.value); setPage(1); }}
               options={sortOptions}
             />
             <button
-              style={{ background:'#B4C9A4', opacity:0.8, padding:'8px 18px', fontSize: "14px", border:'none', borderRadius: "6px", cursor:'pointer' }}
-              onClick={()=> navigate('/booklogwrite')}
+              style={{
+                background: '#B4C9A4',
+                opacity: 0.8,
+                padding: '8px 18px',
+                fontSize: '14px',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+              }}
+              onClick={() => navigate('/booklogwrite')}
             >
               글쓰기
             </button>

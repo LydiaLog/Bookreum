@@ -4,15 +4,13 @@ import BookclubCard_Home from '../components/BookclubCard_Home';
 import BooklogCard_Home from '../components/BooklogCard_Home';
 import BookRecCard from '../components/BookRecCard';
 import BookclubJoinModal from '../components/BookclubJoinModal';
+import api from '../axiosConfig';
+
 import "../styles/Home.css";
 
-import dummyBookclubs from '../data/dummyBookclubs';
 import dummyBooklogs from '../data/dummyBooklogs';
 import summer from '../assets/summer.jpg';
 import jakbyeol from '../assets/jakbyeol.jpg';
-
-// ✅ 더미 북클럽 데이터 (2개 고정)
-const dummyClubs = dummyBookclubs;
 
 // ✅ 더미 추천 책 데이터
 const dummyBooks = [
@@ -32,19 +30,55 @@ const dummyBooks = [
   },
 ];
 
-// 더미 북로그 데이터
 const dummyLogs = dummyBooklogs;
-  
+
 function Home() {
+  const navigate = useNavigate();
+
   const [books, setBooks] = useState(null);
+  const [clubs, setClubs] = useState([]);
+  const [loadingClubs, setLoadingClubs] = useState(true);
+  const [errorClubs, setErrorClubs] = useState('');
+
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [selectedClub, setSelectedClub] = useState(null);
   const [isJoinDisabled, setIsJoinDisabled] = useState(false);
 
-  const navigate = useNavigate();
-
+  // ✅ AI 추천 도서 세팅
   useEffect(() => {
     setBooks(dummyBooks);
+  }, []);
+
+  // ✅ 북클럽 데이터 불러오기
+  useEffect(() => {
+    const fetchClubs = async () => {
+      try {
+        const { data } = await api.get('/api/clubs', {
+          params: {
+            sort: 'latest',
+            keyword: '',
+            size: 2,
+          },
+        });
+
+        const clubsData = data?.content || [];
+
+        const mapped = clubsData.map((club) => ({
+          ...club,
+          date: club.applicationDeadline?.split("T")[0] || "",
+          nickname: club.createdByNickname || "",
+        }));
+
+        setClubs(mapped);
+      } catch (err) {
+        console.error('북클럽 로딩 실패:', err);
+        setErrorClubs('북클럽 목록을 불러오지 못했습니다.');
+      } finally {
+        setLoadingClubs(false);
+      }
+    };
+
+    fetchClubs();
   }, []);
 
   const openJoinModal = (club) => {
@@ -78,21 +112,35 @@ function Home() {
           </div>
           <p className="club-section__subtitle">조용히 함께 읽는 공간, 여기에 있어요</p>
 
-          <div className="club-section__cards">
-            {dummyClubs.slice(0, 2).map((club) => (
-              <BookclubCard_Home 
-                key={club.id} 
-                club={club} 
-                onClick={() => openJoinModal(club)}
-              />
-            ))}
-          </div>
+          {loadingClubs ? (
+            <p style={{ marginTop: 24 }}>북클럽 불러오는 중…</p>
+          ) : errorClubs ? (
+            <p style={{ marginTop: 24, color: 'red' }}>{errorClubs}</p>
+          ) : (
+            <>
+              <div className="club-section__cards">
+                {clubs.slice(0, 2).map((club) => (
+                  <BookclubCard_Home
+                    key={club.id}
+                    club={{
+                      ...club,
+                      book: club.book?.title || '',
+                      author: club.book?.author || '',
+                      coverUrl: club.coverImageUrl || '',
+                      nickname: club.createdByNickname || '',
+                    }}
+                    onClick={() => openJoinModal(club)}
+                  />
+                ))}
+              </div>
 
-          <div className="club-section__more">
-            <button onClick={() => navigate('/bookclub')}>
-              더보기 <span aria-hidden="true">▶</span>
-            </button>
-          </div>
+              <div className="club-section__more">
+                <button onClick={() => navigate('/bookclub')}>
+                  더보기 <span aria-hidden="true">▶</span>
+                </button>
+              </div>
+            </>
+          )}
         </section>
 
         {/* 📖 북로그 미리보기 섹션 */}
