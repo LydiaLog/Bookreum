@@ -4,7 +4,7 @@ import SearchIcon from "../icons/SearchIcon";
 import logo from "../assets/logo.svg";
 
 /* 👉 App.jsx 에서 isLoggedIn, setIsLoggedIn 을 props 로 내려받음 */
-function Header({ isLoggedIn, setIsLoggedIn }) {
+function Header({ isLoggedIn/*, setIsLoggedIn */}) {
   const navigate  = useNavigate();
   const location  = useLocation();
 
@@ -18,12 +18,12 @@ function Header({ isLoggedIn, setIsLoggedIn }) {
     { name: "도움말",   path: "/help" },
   ];
 
-  /* ----- 로그아웃 ----- */
-  const handleLogout = () => {
-    localStorage.removeItem("accessToken");      // 토큰/유저정보 삭제
-    setIsLoggedIn(false);                        // App 의 state 업데이트
-    navigate("/login");
-  };
+  // /* ----- 로그아웃 ----- */
+  // const handleLogout = () => {
+  //   localStorage.removeItem("accessToken");      // 토큰/유저정보 삭제
+  //   setIsLoggedIn(false);                        // App 의 state 업데이트
+  //   navigate("/login");
+  // };
 
   /* ----- 로그인 페이지 이동 ----- */
   const handleLogin = () => navigate("/login");
@@ -111,7 +111,7 @@ function Header({ isLoggedIn, setIsLoggedIn }) {
         {/* 로그인 / 로그아웃 토글 */}
         {isLoggedIn ? (
           <button
-            onClick={handleLogout}
+            /* onClick={handleLogout} */
             style={{
               marginLeft: 16,
               background: "#2E2E2E",
