@@ -19,7 +19,7 @@
 .bookloglist {
   display: flex;
   flex-direction: column;   /* 1열 세로 배열 */
-  gap: 16px;
+  gap: 0;
   margin-top: 24px;         /* ✅ 툴바와 간격 확보 */
   min-height: 320px;        /* ✅ 카드 유무와 무관하게 공간 확보 */
 }
