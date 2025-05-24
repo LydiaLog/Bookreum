@@ -2,45 +2,37 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import api from '../axiosConfig';
 import ConfirmModal from '../components/ConfirmModal';
+import Toast from '../components/Toast';
 import '../styles/BooklogDetail.css';
 
 function BooklogDetail() {
-  const { id } = useParams();          // 게시글 ID
+  const { id } = useParams();
   const navigate = useNavigate();
 
-  /* ───────── state ───────── */
-  const [log,  setLog]     = useState(null);
+  const [log, setLog] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error,   setError]   = useState('');
-
-  /* 좋아요(글) */
+  const [error, setError] = useState('');
   const [postLikes, setPostLikes] = useState(0);
-  const [hasLiked,  setHasLiked]  = useState(false);
-  const [isMyPost,  setIsMyPost]  = useState(false);
-
-  /* 댓글 */
-  const [comments,  setComments]  = useState([]);
-  const [input,     setInput]     = useState('');
+  const [hasLiked, setHasLiked] = useState(false);
+  const [isMyPost, setIsMyPost] = useState(false);
+  const [comments, setComments] = useState([]);
+  const [input, setInput] = useState('');
   const [editingId, setEditingId] = useState(null);
-  const [editText,  setEditText]  = useState('');
+  const [editText, setEditText] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState(null);
+  const [showDeletePostModal, setShowDeletePostModal] = useState(false);
+  const [toastMsg, setToastMsg] = useState('');
 
-  /* 모달 */
-  const [showModal,          setShowModal]          = useState(false);
-  const [deleteTargetId,     setDeleteTargetId]     = useState(null);
-  const [showDeletePostModal,setShowDeletePostModal]= useState(false);
+  const currentUser = '테스터';
+  const showToast = msg => setToastMsg(msg);
 
-  /* 임시 로그인 유저 */
-  const currentUser = '테스트유저';
-
-  /* ─── 1. 글 + 좋아요 + 댓글 로드 ─── */
   useEffect(() => {
     (async () => {
       try {
-        /* ① 게시글 */
         const { data: post } = await api.get(`/api/posts/${id}`);
         setLog(post);
 
-        /* ② 좋아요 상태 */
         try {
           const { data: liked } = await api.get(`/api/posts/${id}/heart`);
           setHasLiked(Boolean(liked));
@@ -51,7 +43,6 @@ function BooklogDetail() {
         const mine = post.nickname === currentUser;
         setIsMyPost(mine);
 
-        /* ③ 내 글이면 좋아요 개수 */
         if (mine) {
           try {
             const { data: count } = await api.get(`/api/posts/${id}/heart-count`);
@@ -61,15 +52,11 @@ function BooklogDetail() {
           }
         }
 
-        /* ④ 댓글 리스트 + 공감 정보 */
         try {
-          const { data: list } =
-            await api.get(`/api/comments/post/${id}?isOwner=${mine}`);
-
+          const { data: list } = await api.get(`/api/comments/post/${id}?isOwner=${mine}`);
           const augmented = await Promise.all(
             list.map(async (c) => {
               try {
-                /* 댓글 공감 여부·개수 동시 조회 */
                 const [likedRes, countRes] = await Promise.all([
                   api.get(`/api/comments/${c.id}/hearts/exists`),
                   api.get(`/api/comments/${c.id}/hearts/count`),
@@ -80,16 +67,14 @@ function BooklogDetail() {
                   likes: countRes.data ?? 0,
                 };
               } catch (e) {
-                console.error('comment heart info load error:', e); // e 사용
-                /* 공감 정보 못 불러와도 기본값으로 진행 */
+                console.error('comment heart info load error:', e);
                 return { ...c, liked: false, likes: 0 };
               }
             })
           );
-
           setComments(augmented);
         } catch (e) {
-          console.error('comment list load error:', e); // e 사용
+          console.error('comment list load error:', e);
         }
 
       } catch (err) {
@@ -101,45 +86,37 @@ function BooklogDetail() {
     })();
   }, [id]);
 
-  /* ─── 2. 글 좋아요 토글 ─── */
   const togglePostLike = async () => {
-  const likedNow = !hasLiked;
-  if (isMyPost) setPostLikes(prev => likedNow ? prev + 1 : prev - 1);
-  setHasLiked(likedNow);
+    const likedNow = !hasLiked;
+    if (isMyPost) setPostLikes(prev => likedNow ? prev + 1 : prev - 1);
+    setHasLiked(likedNow);
 
-  try {
-    await api.post(`/api/posts/${id}/heart`);
-    alert(likedNow ? '좋아요를 눌렀습니다!' : '좋아요를 취소했습니다.');
-  } catch (e) {
-    console.error('togglePostLike error:', e);   // ← e 사용!
-
-    /* 롤백 */
-    if (isMyPost) setPostLikes(prev => likedNow ? prev - 1 : prev + 1);
-    setHasLiked(!likedNow);
-    alert('좋아요 처리 실패, 다시 시도해 주세요.');
+    try {
+      await api.post(`/api/posts/${id}/heart`);
+      showToast(likedNow ? '마음을 남겼어요!' : '🥺');
+    } catch (e) {
+      console.error('togglePostLike error:', e);
+      if (isMyPost) setPostLikes(prev => likedNow ? prev - 1 : prev + 1);
+      setHasLiked(!likedNow);
+      showToast('좋아요 처리 실패, 다시 시도해 주세요.');
     }
   };
 
-  /* ─── 3. 댓글 좋아요 토글 (백엔드 연동) ─── */
   const toggleCommentLike = async cid => {
-    // optimistic update
     setComments(cs => cs.map(c =>
       c.id === cid ? { ...c, likes: c.liked ? c.likes - 1 : c.likes + 1, liked: !c.liked } : c
     ));
-
     try {
       await api.post(`/api/comments/${cid}/hearts`);
     } catch (e) {
-      console.error('comment heart error', e);      // ← e 사용
-      // rollback
+      console.error('comment heart error', e);
       setComments(cs => cs.map(c =>
         c.id === cid ? { ...c, likes: c.liked ? c.likes - 1 : c.likes + 1, liked: !c.liked } : c
       ));
-      alert('댓글 공감 처리에 실패했습니다.');
+      showToast('댓글 공감 처리에 실패했습니다.');
     }
   };
 
-  /* ─── 4. 댓글 CRUD (백엔드 연동) ─── */
   const handleAddComment = async () => {
     if (!input.trim()) return;
     try {
@@ -150,7 +127,7 @@ function BooklogDetail() {
       setComments([...comments, { ...newC, likes: 0, liked: false }]);
       setInput('');
     } catch (e) {
-      alert('댓글 등록 실패');
+      showToast('댓글 등록 실패');
       console.error(e);
     }
   };
@@ -162,7 +139,7 @@ function BooklogDetail() {
       await api.delete(`/api/comments/${deleteTargetId}`);
       setComments(comments.filter(c => c.id !== deleteTargetId));
     } catch (e) {
-      alert('댓글 삭제 실패');
+      showToast('댓글 삭제 실패');
       console.error(e);
     } finally {
       setShowModal(false);
@@ -182,27 +159,25 @@ function BooklogDetail() {
       setEditingId(null);
       setEditText('');
     } catch (e) {
-      alert('댓글 수정 실패');
+      showToast('댓글 수정 실패');
       console.error(e);
     }
   };
 
-  /* ─── 5. 글 수정/삭제 ─── */
   const startEdit = () => navigate('/booklogwrite', { state: { log } });
   const confirmPostDelete = async () => {
     try {
       await api.delete(`/api/posts/${id}`);
       navigate('/bookloglist');
     } catch (e) {
-      alert('삭제에 실패했습니다.');
+      showToast('삭제에 실패했습니다.');
       console.error(e);
     }
   };
 
-  /* ─── 6. 렌더 ─── */
   if (loading) return <p style={{ textAlign: 'center', marginTop: 40 }}>로딩 중…</p>;
-  if (error)   return <p style={{ textAlign: 'center', marginTop: 40, color: 'red' }}>{error}</p>;
-  if (!log)    return <p>존재하지 않는 북로그입니다 😢</p>;
+  if (error) return <p style={{ textAlign: 'center', marginTop: 40, color: 'red' }}>{error}</p>;
+  if (!log) return <p>존재하지 않는 북로그입니다 😢</p>;
 
   return (
     <div className="booklog-detail">
@@ -235,22 +210,18 @@ function BooklogDetail() {
         </div>
       )}
 
-      {/* 댓글 */}
       <section className="comments">
-        <h3>댓글 {comments.length}</h3>
+        <h3>댓글 {isMyPost ? comments.length : ''}</h3>
         <ul className="comments__list">
           {comments.map(c => {
             const isMine = c.nickname === currentUser;
             return (
               <li key={c.id}>
                 <strong>{c.nickname}</strong>
-
-                {/* 좋아요 아이콘 + (내 댓글이면) 숫자 */}
                 <span className="comment-like" onClick={() => toggleCommentLike(c.id)}>
-                  {c.liked ? '❤️' : '🤍'} 
+                  {c.liked ? '❤️' : '🤍'}
                   {isMine && `${c.likes}`}
                 </span>
-
                 {editingId === c.id ? (
                   <>
                     <textarea
@@ -264,7 +235,6 @@ function BooklogDetail() {
                 ) : (
                   <p>{c.content}</p>
                 )}
-
                 {isMine && editingId !== c.id && (
                   <div className="comment__actions">
                     <button onClick={() => handleEdit(c.id, c.content)}>수정</button>
@@ -276,7 +246,6 @@ function BooklogDetail() {
           })}
         </ul>
 
-        {/* 댓글 작성 */}
         <div className="comments__form">
           <textarea
             className="comments__textarea"
@@ -289,7 +258,6 @@ function BooklogDetail() {
         </div>
       </section>
 
-      {/* 댓글 삭제 모달 */}
       {showModal && (
         <ConfirmModal
           message="정말 이 댓글을 삭제하시겠어요?"
@@ -298,13 +266,16 @@ function BooklogDetail() {
         />
       )}
 
-      {/* 글 삭제 모달 */}
       {showDeletePostModal && (
         <ConfirmModal
           message="정말 이 글을 삭제하시겠어요?"
           onConfirm={confirmPostDelete}
           onCancel={() => setShowDeletePostModal(false)}
         />
+      )}
+
+      {toastMsg && (
+        <Toast message={toastMsg} onClose={() => setToastMsg('')} />
       )}
     </div>
   );

@@ -48,7 +48,7 @@ function BooklogList() {
      })();
    }, []);
 
-  { /* useEffect(() => {
+  /* useEffect(() => {
     try {
       // 더미 데이터 불러오기
       setLogs(dummyBooklogs); 
@@ -58,7 +58,7 @@ function BooklogList() {
     } finally {
       setLoading(false);
     }
-  }, []); */ }
+  }, []); */
 
   /* ===== 2. 검색 + 정렬 + 페이지네이션 처리 ===== */
   const { pageData, totalPages } = useMemo(() => {
