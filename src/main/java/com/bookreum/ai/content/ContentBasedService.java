@@ -57,8 +57,12 @@ public class ContentBasedService {
         StringBuilder jsonOutput = new StringBuilder();
 
         try {
-            // ✅ Python 실행 - 가상환경 Python 명시적으로 지정
-            ProcessBuilder pb = new ProcessBuilder("D:\\capstone\\venv\\Scripts\\python.exe", "D:\\capstone\\recommender\\run_model.py", title);
+            // ✅ Python 실행
+            ProcessBuilder pb = new ProcessBuilder(
+                    "D:\\capstone\\venv\\Scripts\\python.exe",
+                    "D:\\capstone\\recommender\\run_model.py",
+                    title
+            );
             pb.redirectErrorStream(true);
             Process process = pb.start();
 
@@ -72,9 +76,15 @@ public class ContentBasedService {
 
             process.waitFor();
 
-            // ✅ JSON 파싱
+            // ✅ JSON 파싱 전 유효성 확인
+            String outputStr = jsonOutput.toString().trim();
+            if (!outputStr.startsWith("{")) {
+                logger.error("❌ [Python Output Error] Not a valid JSON format: {}", outputStr);
+                return result; // 빈 리스트 반환
+            }
+
             ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode rootNode = objectMapper.readTree(jsonOutput.toString());
+            JsonNode rootNode = objectMapper.readTree(outputStr);
             JsonNode titlesNode = rootNode.get("recommended_titles");
 
             if (titlesNode != null && titlesNode.isArray()) {
@@ -82,7 +92,7 @@ public class ContentBasedService {
                     result.add(titleNode.asText());
                 }
             } else {
-                logger.error("❌ [Python Execution Error] JSON 형식이 올바르지 않습니다: {}", jsonOutput);
+                logger.error("❌ [Python Execution Error] JSON 구조가 예상과 다름: {}", outputStr);
             }
 
         } catch (Exception e) {
@@ -93,10 +103,9 @@ public class ContentBasedService {
         return result;
     }
 
- // ✅ DB에 추천된 책 저장 (중복 확인 개선)
+    // ✅ DB에 추천된 책 저장 (중복 확인)
     private void saveRecommendedBook(ContentBookDto bookDto) {
         try {
-            // 중복 확인 없이 직접 저장 시도 (중복이면 무시)
             recommendedBookRepository.findByTitleAndAuthor(bookDto.getTitle(), bookDto.getAuthor())
                     .orElseGet(() -> {
                         RecommendedBook recommendedBook = new RecommendedBook();
@@ -111,7 +120,6 @@ public class ContentBasedService {
             logger.error("❌ [DB 저장 오류] {}", e.getMessage(), e);
         }
     }
-
 
     // 📌 ContentBookDto 매핑
     private ContentBookDto mapToDto(AladinItem item) {

@@ -150,8 +150,9 @@ public class PostService {
 	 * ✅ 페이지네이션이 적용된 최신 글 조회
 	 */
 	public List<PostDto.Response> getLatestPosts(Pageable pageable) {
-		return postRepository.findAllByOrderByCreatedAtDesc(pageable).stream()
-				.map(post -> PostDto.Response.fromEntity(post, null, 0L, 0L)).collect(Collectors.toList());
+	    return postRepository.findAllWithUserAndBook(pageable).stream()
+	        .map(post -> PostDto.Response.fromEntity(post, null, 0L, 0L))
+	        .collect(Collectors.toList());
 	}
 
 	/**
@@ -177,8 +178,10 @@ public class PostService {
 	 * ✅ 게시글 상세 조회 (postId 기반)
 	 */
 	public PostDto.DetailResponse getPostDetail(Integer postId) {
-		Post post = postRepository.findById(postId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-				"Post with ID " + postId + " does not exist in the database."));
+		// ✅ LAZY 로딩 문제 해결을 위해 fetch join으로 조회
+		Post post = postRepository.findByIdWithUserAndBook(postId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+						"Post with ID " + postId + " does not exist in the database."));
 
 		System.out.println("📌 Retrieved Post: " + post);
 

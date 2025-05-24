@@ -40,7 +40,7 @@ public class PostDto {
          * 📌 Post 엔티티로부터 Response 생성
          */
         public static Response fromEntity(Post post, User viewer, Long heartCount, Long commentCount) {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd");
             return Response.builder()
                     .id(post.getId())
                     .title(post.getTitle())
@@ -94,7 +94,7 @@ public class PostDto {
          * 📌 Post 엔티티로부터 DetailResponse 생성
          */
         public static DetailResponse fromEntity(Post post, List<CommentDto.Response> comments, long heartCount, User viewer) {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss");
             
             return DetailResponse.builder()
                     .id(post.getId())

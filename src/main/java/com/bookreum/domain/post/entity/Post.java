@@ -89,4 +89,8 @@ public class Post {
             this.heartCount--;
         }
     }
+    /** 연관관계 편의 메서드: 사용자 설정 */
+    public void setUser(User user) {
+        this.user = user;
+    }
 }

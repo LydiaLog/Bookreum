@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, Integer> {
@@ -46,4 +47,13 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
 
     // ✅ 마이페이지 - 사용자 게시물 조회
     List<Post> findByUser(User user);
+    
+    @Query(value = "SELECT p FROM Post p JOIN FETCH p.user u JOIN FETCH p.book b ORDER BY p.createdAt DESC",
+    	       countQuery = "SELECT COUNT(p) FROM Post p")
+    	Page<Post> findAllWithUserAndBook(Pageable pageable);
+    
+    @Query("SELECT p FROM Post p JOIN FETCH p.user u JOIN FETCH p.book b WHERE p.id = :postId")
+    Optional<Post> findByIdWithUserAndBook(@Param("postId") Integer postId);
+
+
 }
