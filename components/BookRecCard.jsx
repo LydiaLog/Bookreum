@@ -30,7 +30,7 @@ function BookRecCard({ books, onMoreClick }) {
       </ul>
 
       <button className="ai-book-rec__more" onClick={onMoreClick}>
-        더보기 <span aria-hidden="true">▶</span>
+        더 많은 추천을 받아보세요 <span aria-hidden="true">▶</span>
       </button>
     </section>
   );

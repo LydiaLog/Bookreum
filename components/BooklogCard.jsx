@@ -11,6 +11,11 @@ function BooklogCard({ booklog }) {
     return text.length > maxLength ? text.slice(0, maxLength) + '…' : text;
   };
 
+  const truncate_02 = (text, maxLength = 30) => {
+    return text.length > maxLength ? text.slice(0, maxLength) + '…' : text;
+  };
+
+
   return (
     <div
       onClick={handleClick}
@@ -31,7 +36,7 @@ function BooklogCard({ booklog }) {
           {booklog.title}
         </h3>
         <p style={{ fontSize: "13px", color: "#666", margin: "0px", paddingLeft: "10px" }}>
-          {booklog.bookTitle} | {booklog.bookAuthor}
+          {truncate_02(booklog.bookTitle)} | {truncate_02(booklog.bookAuthor)}
         </p>
         <p
           style={{

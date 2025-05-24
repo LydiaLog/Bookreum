@@ -40,7 +40,7 @@ function BookclubCard_Home({ club, onClick, navigateClick = true }) {
     >
       <div className="img-container">
         <img
-          src={club.coverUrl || '/images/default-club.jpg'}
+          src={club.image || '/images/default-club.jpg'}
           alt="북클럽 대표 이미지"
           className="bookclub-card__image"
         />
@@ -72,7 +72,7 @@ function BookclubCard_Home({ club, onClick, navigateClick = true }) {
 
         <div className="bookclub-card__middle">
           <div className="bookclub-card__title">{club.title}</div>
-          <div className="bookclub-card__book">📖 {club.book}</div>
+          <div className="bookclub-card__book">📖 {club.book} | {club.author}</div>
         </div>
 
         <div className="bookclub-card__footer">
