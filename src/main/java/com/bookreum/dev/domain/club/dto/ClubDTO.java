@@ -68,7 +68,7 @@ public class ClubDTO {
             .createdAt(e.getCreatedAt())
             .createdByNickname(e.getUser() != null ? e.getUser().getNickname() : null)
             .createdByProfileImageUrl(e.getUser() != null ? e.getUser().getProfileImage() : null)
-            .coverImageUrl(e.getCoverImageUrl())
+            .coverImageUrl(e.getBook() != null ? e.getBook().getCoverImageUrl() : null)
             .build();
     }
     /** ClubEntity 빌드를 위해 bookId를 Entity로 매핑할 때 사용 */

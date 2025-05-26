@@ -1,11 +1,10 @@
 package com.bookreum.dev.domain.club.controller;
 
+import java.time.LocalDateTime;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,18 +16,16 @@ import com.bookreum.dev.domain.book.BookEntity;
 import com.bookreum.dev.domain.book.BookRepository;
 import com.bookreum.dev.domain.club.dto.ClubDTO;
 import com.bookreum.dev.domain.club.entity.ClubEntity;
+import com.bookreum.dev.domain.club.entity.ClubStatus;
 import com.bookreum.dev.domain.club.service.ClubService;
 import com.bookreum.dev.domain.user.UserEntity;
 import com.bookreum.dev.domain.user.UserService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
-/**
- * Club(모임) CRUD를 위한 REST 컨트롤러
- */
+
 @RestController
 @RequestMapping("/api/clubs")
 @RequiredArgsConstructor
@@ -36,12 +33,9 @@ public class ClubController {
 
     private final ClubService clubService;
     private final UserService userService;
-    private final AladinBookService aladinBookService; 
-    private final BookRepository bookRepository;        
+    private final AladinBookService aladinBookService;
+    private final BookRepository bookRepository;
 
-    /** 
-     * 클럽 생성 전, 키워드로 책 검색 (알라딘 API 중계) 
-     */
     @GetMapping("/searchBooks")
     public List<AladinItem> searchBooks(@RequestParam String keyword) {
         var result = aladinBookService.searchBooks(keyword);
@@ -50,12 +44,11 @@ public class ClubController {
         }
         return result.getItem();
     }
-    /**
-     * 사용자가 선택한 책 저장 (중복 방지)
-     */
+
     @PostMapping("/saveBook")
     public BookEntity saveBook(@RequestBody AladinItem item) {
-        return bookRepository.findByTitleAndAuthor(item.getTitle(), item.getAuthor())
+        return bookRepository
+            .findByTitleAndAuthor(item.getTitle(), item.getAuthor())
             .orElseGet(() -> bookRepository.save(
                 BookEntity.builder()
                     .title(item.getTitle())
@@ -65,140 +58,177 @@ public class ClubController {
             ));
     }
 
-    /**
-     * 모임 생성 (요청에 bookId 포함)
-     */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ClubDTO> createClub(
-        @RequestPart("club") @Valid ClubDTO dto,
+        @RequestParam("title") String title,
+        @RequestParam("description") String description,
+        @RequestParam("minParticipants") Integer minParticipants,
+        @RequestParam("maxParticipants") Integer maxParticipants,
+        @RequestParam("applicationDeadline") String applicationDeadline,
+        @RequestParam("activityDurationDays") Integer activityDurationDays,
+        @RequestParam("status") String status,
+        @RequestParam("bookId") Integer bookId,
         @RequestParam("userId") Integer userId,
-        @RequestParam(value = "coverUrl", required = false) String coverUrl,
+        @RequestParam(value = "clubCoverImageUrl", required = false) String coverUrl,
         @RequestPart(value = "coverImage", required = false) MultipartFile coverImage
     ) {
-        // 1) 사용자, 책 조회
         UserEntity user = userService.getUserEntity(userId);
-        BookEntity book = bookRepository.findById(dto.getBookId())
+        BookEntity book = bookRepository.findById(bookId)
             .orElseThrow(() -> new ResponseStatusException(
-                HttpStatus.NOT_FOUND, "책을 찾을 수 없습니다. id=" + dto.getBookId()
+                HttpStatus.NOT_FOUND, "책을 찾을 수 없습니다. id=" + bookId
             ));
-        // 2) DTO → Entity (coverImageUrl 은 빈값으로 일단 생성)
-        ClubEntity club = dto.toEntity(user, book, null);
-        // 3) 이미지 로직 포함한 저장
-        ClubEntity saved = clubService.createClub(club, coverImage, coverUrl);
-        // 4) DTO 반환
+            
+        ClubStatus clubStatus;
+        try {
+            clubStatus = ClubStatus.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST, 
+                "유효하지 않은 상태값입니다. 가능한 값: OPEN, MATCHED, CLOSED"
+            );
+        }
+
+        LocalDateTime deadline;
+        try {
+            deadline = LocalDateTime.parse(applicationDeadline);
+        } catch (Exception e) {
+            throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "유효하지 않은 날짜 형식입니다."
+            );
+        }
+            
+        ClubDTO dto = ClubDTO.builder()
+            .title(title)
+            .description(description)
+            .minParticipants(minParticipants)
+            .maxParticipants(maxParticipants)
+            .applicationDeadline(deadline)
+            .activityDurationDays(activityDurationDays)
+            .status(clubStatus)
+            .build();
+            
+        ClubEntity toSave = dto.toEntity(user, book, null);
+        ClubEntity saved = clubService.createClub(toSave, coverImage, coverUrl);
         return ResponseEntity.status(HttpStatus.CREATED)
                              .body(ClubDTO.fromEntity(saved));
     }
 
-    /**
-     * 특정 모임 조회
-     * @param clubId 모임 ID
-     * @return 조회된 모임 DTO
-     */
     @GetMapping("/{clubId}")
     public ResponseEntity<ClubDTO> getClub(@PathVariable("clubId") Integer clubId) {
         ClubEntity club = clubService.getClub(clubId);
         return ResponseEntity.ok(ClubDTO.fromEntity(club));
     }
 
-    /**
-     * 모든 모임 목록 조회 or 키워드 검색 (페이징, sort=latest|oldest)
-     */
     @GetMapping
     public ResponseEntity<Page<ClubDTO>> listOrSearchClubs(
-            @RequestParam(value = "keyword", required = false) String keyword,
-            @RequestParam(value = "sort", defaultValue = "createdAt") String sort,
-            @RequestParam(value = "status", required = false) String status,
-            Pageable pageable
+        @RequestParam(value = "keyword", required = false) String keyword,
+        @RequestParam(value = "sort", defaultValue = "latest") String sort,
+        @RequestParam(value = "status", required = false) String status,
+        Pageable pageable
     ) {
-        // 정렬 방향 설정
-        Sort sortObj = Sort.by(Sort.Direction.DESC, "createdAt");
-        if ("oldest".equalsIgnoreCase(sort)) {
-            sortObj = Sort.by(Sort.Direction.ASC, "createdAt");
-        }
-        // Pageable 객체 재생성
-        Pageable pageableWithSort = PageRequest.of(
-            pageable.getPageNumber(),
-            pageable.getPageSize(),
-            sortObj
+        Page<ClubDTO> page = clubService.listOrSearchClubs(
+            keyword,
+            sort,
+            status,
+            pageable
         );
-        
-        Page<ClubDTO> page = clubService.listOrSearchClubs(keyword, sort, status, pageableWithSort);
         return ResponseEntity.ok(page);
     }
 
-    /**
-     * 모임 삭제
-     * @param clubId 삭제할 모임 ID
-     * @return HTTP 204 상태
-     */
     @DeleteMapping("/{clubId}")
-    public ResponseEntity<Void> deleteClub(@PathVariable Integer clubId) {
+    public ResponseEntity<Void> deleteClub(@PathVariable("clubId") Integer clubId) {
         clubService.deleteClub(clubId);
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * 공개 북클럽 목록 조회
-     */
     @GetMapping("/public")
     public ResponseEntity<Page<ClubDTO>> getPublicClubs(
-            @RequestParam(value = "size", defaultValue = "10") int size,
-            @RequestParam(value = "sort", defaultValue = "createdAt") String sort,
-            @RequestParam(value = "status", required = false) String status,
-            Pageable pageable
+        @RequestParam(value = "status", required = false) String status,
+        Pageable pageable
     ) {
-        // 정렬 방향 설정
-        Sort sortObj = Sort.by(Sort.Direction.DESC, "createdAt");
-        if ("oldest".equalsIgnoreCase(sort)) {
-            sortObj = Sort.by(Sort.Direction.ASC, "createdAt");
-        }
-        // Pageable 객체 재생성
-        Pageable pageableWithSort = PageRequest.of(
-            pageable.getPageNumber(),
-            pageable.getPageSize(),
-            sortObj
+        Page<ClubDTO> page = clubService.listOrSearchClubs(
+            null,
+            "latest",
+            status,
+            pageable
         );
-        
-        Page<ClubDTO> page = clubService.listOrSearchClubs(null, sort, status, pageableWithSort);
         return ResponseEntity.ok(page);
     }
 
-    /**
-     * 최신 북클럽 목록 조회
-     */
     @GetMapping("/public/latest")
     public ResponseEntity<List<ClubDTO>> getLatestClubs(
-            @RequestParam(value = "size", defaultValue = "2") int size
+        @RequestParam(value = "size", defaultValue = "2") int size
     ) {
-        Pageable pageable = PageRequest.of(0, size);
-        List<ClubDTO> latestClubs = clubService.getLatestClubs(pageable);
-        return ResponseEntity.ok(latestClubs);
+        var list = clubService.getLatestClubs(Pageable.ofSize(size));
+        return ResponseEntity.ok(list);
     }
 
-    /**
-     * 마감된 북클럽 목록 조회
-     */
     @GetMapping("/closed")
-    public ResponseEntity<Page<ClubDTO>> getClosedClubs(
-            @RequestParam(value = "size", defaultValue = "10") int size,
-            Pageable pageable
-    ) {
-        Page<ClubEntity> closedClubs = clubService.findAllClosedClubsWithBook(pageable);
-        return ResponseEntity.ok(closedClubs.map(ClubDTO::fromEntity));
+    public ResponseEntity<Page<ClubDTO>> getClosedClubs(Pageable pageable) {
+        Page<ClubDTO> page = clubService
+            .findAllClosedClubsWithBook(pageable)
+            .map(ClubDTO::fromEntity);
+        return ResponseEntity.ok(page);
     }
 
-    /**
-     * 북클럽 상태 업데이트
-     */
     @PutMapping("/{clubId}/status")
-    public ResponseEntity<ClubDTO> updateClubStatus(@PathVariable Integer clubId) {
+    public ResponseEntity<ClubDTO> updateClubStatus(@PathVariable("clubId") Integer clubId) {
         ClubEntity club = clubService.getClub(clubId);
         clubService.checkAndUpdateClubStatus(club);
         return ResponseEntity.ok(ClubDTO.fromEntity(club));
     }
+    @PutMapping("/{clubId}")
+    public ResponseEntity<ClubDTO> updateClub(
+        @PathVariable("clubId") Integer clubId,
+        @RequestParam("title") String title,
+        @RequestParam("description") String description,
+        @RequestParam("minParticipants") Integer minParticipants,
+        @RequestParam("maxParticipants") Integer maxParticipants,
+        @RequestParam("applicationDeadline") String applicationDeadline,
+        @RequestParam("activityDurationDays") Integer activityDurationDays,
+        @RequestParam("status") String status,
+        @RequestParam("bookId") Integer bookId,
+        @RequestParam("userId") Integer userId
+    ) {
+        UserEntity user = userService.getUserEntity(userId);
+        BookEntity book = bookRepository.findById(bookId)
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND, "책을 찾을 수 없습니다. id=" + bookId
+            ));
+            
+        ClubStatus clubStatus;
+        try {
+            clubStatus = ClubStatus.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST, 
+                "유효하지 않은 상태값입니다. 가능한 값: OPEN, MATCHED, CLOSED"
+            );
+        }
+
+        LocalDateTime deadline;
+        try {
+            deadline = LocalDateTime.parse(applicationDeadline);
+        } catch (Exception e) {
+            throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "유효하지 않은 날짜 형식입니다."
+            );
+        }
+            
+        ClubDTO dto = ClubDTO.builder()
+            .title(title)
+            .description(description)
+            .minParticipants(minParticipants)
+            .maxParticipants(maxParticipants)
+            .applicationDeadline(deadline)
+            .activityDurationDays(activityDurationDays)
+            .status(clubStatus)
+            .build();
+            
+        ClubEntity changes = dto.toEntity(user, book, null);
+        ClubEntity updated = clubService.updateClub(clubId, changes);
+        return ResponseEntity.ok(ClubDTO.fromEntity(updated));
+    }
 }
-
-
-
-

@@ -37,7 +37,7 @@ public class UserEntity {
      * 프로필 이미지 URL (선택)
      */
     @Column(length = 255)
-    private String profileImage;
+    private String profileImage = "/uploads/temp/profile.jpg";
     
     // 모든 사용자가 소셜 가입
     @Builder.Default

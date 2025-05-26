@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.bookreum.dev.domain.club.entity.ChatRoomEntity;
 import com.bookreum.dev.domain.club.entity.ClubApplicationEntity;
 import com.bookreum.dev.domain.club.entity.ClubEntity;
 import com.bookreum.dev.domain.user.UserEntity;
@@ -52,12 +51,18 @@ public interface ClubApplicationRepository extends JpaRepository<ClubApplication
     
     List<ClubApplicationEntity> findByUser(UserEntity user);
 
- // 내가 신청한 모임 목록
- @Query("""
-    SELECT cr FROM ChatRoomEntity cr
-    JOIN cr.club c
-    JOIN ClubApplicationEntity a ON a.club = c
-    WHERE a.user = :user
- """)
- List<ChatRoomEntity> findRoomsByUser(@Param("user") UserEntity user);
+// // 내가 신청한 모임 목록
+// @Query("""
+//    SELECT cr FROM ChatRoomEntity cr
+//    JOIN cr.club c
+//    JOIN ClubApplicationEntity a ON a.club = c
+//    WHERE a.user = :user
+// """)
+// List<ChatRoomEntity> findRoomsByUser(@Param("user") UserEntity user);
+//}
+    /**
+     * 특정 모임에 신청한 사용자 엔티티 리스트만 조회
+     */
+    @Query("SELECT a.user FROM ClubApplicationEntity a WHERE a.club = :club")
+    List<UserEntity> findUsersByClub(@Param("club") ClubEntity club);
 }

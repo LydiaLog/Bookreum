@@ -10,8 +10,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 /**
-* 북클럽 모임 정보 엔티티
-*/
+ * 북클럽 모임 정보 엔티티
+ */
 @Entity
 @Table(name = "club")
 @Getter @Setter
@@ -20,77 +20,78 @@ import lombok.*;
 @Builder(toBuilder = true)
 public class ClubEntity {
 
-   @Id
-   @GeneratedValue(strategy = GenerationType.IDENTITY)
-   private Integer id;
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
-   private String title;
-   private String description;
+    private String title;
+    private String description;
+    private Integer minParticipants = 1;
+    private Integer maxParticipants = 5;
 
-   private Integer minParticipants = 1;
-   private Integer maxParticipants = 5;
+    @Column(name = "application_deadline", nullable = false)
+    private LocalDateTime applicationDeadline;
 
-   @Column(name = "application_deadline", nullable = false)
-   private LocalDateTime applicationDeadline;
+    private int activityDurationDays;
 
-   private int activityDurationDays;
+    @Enumerated(EnumType.STRING)
+    private ClubStatus status = ClubStatus.OPEN;
 
-   @Enumerated(EnumType.STRING)
-   private ClubStatus status = ClubStatus.OPEN;
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+    @PrePersist
+    private void onCreate() { this.createdAt = LocalDateTime.now(); }
 
-   @Column(name = "created_at", nullable = false, updatable = false)
-   private LocalDateTime createdAt;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "book_id", nullable = false)
+    private BookEntity book;
 
-   @PrePersist
-   private void onCreate() {
-       this.createdAt = LocalDateTime.now();
-   }
+    /** 모임 생성자(호스트) */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by_user_id", nullable = false)
+    private UserEntity user;
 
-   @ManyToOne(fetch = FetchType.LAZY)
-   @JoinColumn(name = "book_id", nullable = false)
-   private BookEntity book;
+    /** 신청자 목록 */
+    @OneToMany(mappedBy = "club", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<ClubApplicationEntity> applications = new ArrayList<>();
 
-   /** 모임 생성자 */
-   @ManyToOne(fetch = FetchType.LAZY)
-   @JoinColumn(name = "created_by_user_id", nullable = false)
-   private UserEntity user;
+    /** 댓글(채팅) 목록 */
+    @OneToMany(mappedBy = "club", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<ClubCommentEntity> comments = new ArrayList<>();
 
-   /** 사용자 신청 목록 */
-   @OneToMany(mappedBy = "club", cascade = CascadeType.ALL, orphanRemoval = true)
-   @Builder.Default
-   private List<ClubApplicationEntity> applications = new ArrayList<>();
+    /** 댓글 추가 편의 메서드 */
+    public void addComment(ClubCommentEntity comment) {
+        comments.add(comment);
+        comment.setClub(this);
+    }
 
-   /** 신청 추가 편의 메서드 */
-   public void addApplication(ClubApplicationEntity app) {
-       applications.add(app);
-       app.setClub(this);
-   }
+    /** 댓글 삭제 편의 메서드 */
+    public void removeComment(ClubCommentEntity comment) {
+        comments.remove(comment);
+        comment.setClub(null);
+    }
 
-   /** 신청 삭제 편의 메서드 */
-   public void removeApplication(ClubApplicationEntity app) {
-       applications.remove(app);
-       app.setClub(null);
-   }
+    /** 대표 이미지 URL */
+    @Column(name = "club_cover_image_url", length = 255)
+    private String coverImageUrl;
 
-   /** 채팅방 연관 */
-   @OneToOne(mappedBy = "club", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-   private ChatRoomEntity chatRoom;
-   
-   /** 모임 대표 이미지 URL */
-   @Column(name = "club_cover_image_url", length = 255)
-   private String coverImageUrl;
-   
-//   상태값 확인 메소드들 참가인원과 상태 변경 메소드
-   public void updateStatus() {
-	    boolean deadlinePassed = this.applicationDeadline != null &&
-	                              LocalDateTime.now().isAfter(this.applicationDeadline);
-	    boolean full = getCurrentParticipants() >= this.maxParticipants;
+    /** 상태 갱신 로직 */
+    public void updateStatus(int currentParticipants) {
+        boolean deadlinePassed = applicationDeadline != null &&
+            LocalDateTime.now().isAfter(applicationDeadline);
+        boolean full = maxParticipants != null && currentParticipants >= maxParticipants;
 
-	    this.status = (deadlinePassed || full) ? ClubStatus.CLOSED : ClubStatus.OPEN;
-	}
+        if (full) {
+            this.status = ClubStatus.MATCHED;
+        } else if (deadlinePassed) {
+            this.status = ClubStatus.CLOSED;
+        } else {
+            this.status = ClubStatus.OPEN;
+        }
+    }
 
-	public int getCurrentParticipants() {
-	    return this.applications != null ? this.applications.size() : 0;
-	}
-
+    public int getCurrentParticipants() {
+        return applications != null ? applications.size() : 0;
+    }
 }

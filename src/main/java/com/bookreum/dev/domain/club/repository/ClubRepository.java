@@ -2,6 +2,8 @@ package com.bookreum.dev.domain.club.repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -188,6 +190,4 @@ public interface ClubRepository extends JpaRepository<ClubEntity, Integer> {
            "LEFT JOIN FETCH c.user " +
            "WHERE c.id = :id")
     Optional<ClubEntity> findByIdWithBook(@Param("id") Integer id);
-}
-
 }
