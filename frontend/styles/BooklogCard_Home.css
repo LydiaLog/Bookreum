@@ -1,0 +1,70 @@
+.booklog-card {
+  display: flex !important;
+  width: 100% !important;
+  max-width: 800px !important;
+  height: 160px !important;
+  padding: 1rem !important;
+  border-radius: 8px !important;
+  border: 1px solid #e0e0e0 !important;
+  background-color: #fff !important;
+  gap: 1rem !important;
+  cursor: pointer !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  transition: all 0.2s ease !important;
+  margin-bottom: 0.8rem !important;
+  align-items: flex-start !important;
+}
+
+.booklog-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.booklog-card__image {
+  width: 100px !important;
+  height: 160px !important;
+  object-fit: cover !important;
+  border-radius: 4px !important;
+  background-color: #f5f5f5 !important;
+  flex-shrink: 0 !important;
+}
+
+.booklog-card__content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 0;
+}
+
+.booklog-card__title {
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  margin: 0 0 0 0 !important;
+  color: #2c4b2c !important;
+  line-height: 1.1 !important;
+}
+
+.booklog-card__meta {
+  font-size: 0.8rem;
+  color: #999;
+  margin: 0.5rem 0 0.9rem 0;
+  font-weight: 500;
+}
+
+.booklog-card__text {
+  font-size: 1rem !important;
+  color: #555 !important;
+  line-height: 1.5 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 4 !important;
+  -webkit-box-orient: vertical !important;
+}
+
+/* 북로그 섹션 내의 카드들을 세로로 배치 */
+.booklog-section__cards .booklog-card {
+  width: 100% !important;
+  max-width: 800px !important;
+}

@@ -1,0 +1,120 @@
+/* 페이지 전체 래퍼 */
+.page-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* 페이지 제목 */
+.page-title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.page-subtitle {
+  color: #666;
+  margin-bottom: 30px;
+  font-size: 1rem;
+}
+
+/* 상단 컨트롤 영역 */
+.top-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  width: calc(3 * 290px + 2 * 40px);
+  padding: 0;
+  box-sizing: border-box;
+  margin-left: auto;
+  margin-right: auto;
+  position: relative;
+}
+
+/* 왼쪽 검색 영역 */
+.search-left {
+  flex: 0 0 auto;
+  align-self: flex-start;
+  margin-left: 0;
+  position: relative;
+  left: -50px;
+}
+
+/* 오른쪽 컨트롤 영역 */
+.controls-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 0 0 auto;
+  align-self: flex-start;
+  margin-right: 0;
+  position: relative;
+  right: -50px;
+}
+
+/* 만들기 버튼 */
+.controls-right button {
+  background: #b4c9a4;
+  color: black;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.controls-right button:hover {
+  background: #9db88d;
+}
+
+/* 북클럽 카드 그리드 */
+.bookclublist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px;
+  margin-bottom: 40px;
+  min-height: 400px;
+  width: 100%;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+/* 북클럽 목록에서 카드 마진 제거 */
+.bookclublist .bookclub-card {
+  margin: 0;
+}
+
+/* 검색 결과 없음 메시지 */
+.no-results {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: #666;
+  font-size: 1.1rem;
+  padding: 60px 20px;
+}
+
+/* 로딩/에러 메시지 */
+.loading,
+.error {
+  text-align: center;
+  padding: 40px 20px;
+  font-size: 1.1rem;
+}
+
+.error {
+  color: #d32f2f;
+}
+
+/* 페이지네이션 중앙 정렬 */
+.pagination-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+}
