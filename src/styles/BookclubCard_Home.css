@@ -1,0 +1,131 @@
+.bookclub-card {
+    display: flex;
+    align-items: center;
+    width: 370px;
+    height: 240px;
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+    
+.bookclub-card:hover {
+    transform: translateY(-2px);
+}
+  
+.img-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 50%;
+    height: 100%;
+}
+  
+.bookclub-card__image {
+    width: 85%;
+    height: 85%;
+    background-color: #ddd;
+    border-radius: 8px;
+    object-fit: cover;
+}
+    
+.bookclub-card__divider {
+    width: 1px;
+    height: 80%;
+    background-color: #ddd;
+    margin: 0;
+}
+    
+.bookclub-card__info {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 10px;
+    flex: 1;
+    height: 100%;
+}
+    
+.bookclub-card__status-area {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end; 
+    justify-content: center; /* 수직 중앙 정렬 */
+    gap: 4px;
+    height: 50px; /* 높이 지정 (텍스트와 동그라미 중앙 정렬) */
+}
+  
+.bookclub-card__status {
+    color: #2c4b2c;
+    font-weight: bold;
+    font-size: 0.9rem;
+    text-align: center; /* 중앙 정렬 */
+}
+  
+.bookclub-card__status.open {
+    color: green;
+    font-weight: bold;
+}
+    
+.bookclub-card__status.closed {
+    color: gray;
+    font-weight: normal;
+}
+  
+.bookclub-card__members {
+    display: flex;
+    justify-content: center; /* 중앙 정렬 */
+    gap: 4px;
+    margin-top: 4px;
+}
+    
+.circle {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #d9d9d9; /* 기본 회색 (비어 있음) */
+    transition: background-color 0.3s;
+}
+    
+.circle.filled {
+    background-color: #849974; /* 채워진 상태 */
+}
+    
+.members-text {
+    font-size: 12px;
+    color: #555;
+    margin-left: 8px;
+}
+  
+.bookclub-card__middle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: -10px;
+}
+  
+.bookclub-card__title {
+    font-size: 1rem;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.2;
+    margin: 0;
+}
+    
+.bookclub-card__book {
+    font-size: 0.85rem;
+    color: #666;
+    text-align: center;
+    line-height: 1.2;
+    margin: 0;
+}
+    
+.bookclub-card__date {
+    font-size: 0.8rem;
+    color: #888;
+    text-align: center;
+    margin-bottom: 15px;
+}  

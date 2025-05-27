@@ -1,0 +1,95 @@
+.help-wrapper {
+    max-width: 960px;
+    margin: 120px auto 80px; /* 헤더 높이 보정 */
+    padding: 0 24px;
+    position: relative;
+    min-height: calc(100vh - 200px);
+}
+
+/* --- 1페이지 --- */
+.help-center {
+    text-align: center;
+    margin-top: 25vh;
+}
+
+.help-center h1 {
+    font-size: 60px;
+    font-weight: 700;
+    margin-bottom: 24px;
+}
+
+.help-center .subtitle {
+    font-size: 30px;
+    line-height: 1.4;
+    color: #555;
+}
+
+/* CTA 버튼 스타일 (첫 페이지) */
+.cta-btn {
+    margin-top: 30px;
+    padding: 0;
+    font-size: 24px;
+    color: #495340;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.cta-btn:hover {
+    outline: none;
+}
+
+/* ===============================
+   2·3 페이지 공통 레이아웃
+   =============================== */
+.help-book-layout {
+    display: flex;
+    gap: 70px;               /* 좌·우 페이지 간격 */
+    align-items: stretch;    /* 세로선 높이 자동 확장 */
+}
+
+.left-page {
+    display: flex;
+    flex-direction: column;
+}
+
+.left-page > h2 {
+    margin-top: -40px;
+    margin-bottom: 0;
+    white-space: nowrap;
+    font-size: 23px;
+}
+
+.left-page,
+.right-page {
+    flex: 1;
+    font-size: 18px;
+    line-height: 1.6;
+}
+
+.page__divider {
+    flex: 0 0 1px;
+    width: 1px;
+    background-color: #ddd;
+    align-self: stretch;
+}
+
+/* --- 공통: 하단 버튼 --- */
+.next-btn {
+    position: absolute;
+    right: 24px;
+    bottom: 0;
+    padding: 0;
+    color: #495340;
+    border: none;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s;
+    outline: none;
+}
+
+.next-btn:hover {
+    outline: none;
+}

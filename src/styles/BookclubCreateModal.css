@@ -1,0 +1,80 @@
+.create-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0 0 0 / 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+.create-modal {
+    width: 420px;
+    background: #fff;
+    border-radius: 14px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+.create-modal label {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.9rem;
+    gap: 4px;
+}
+.create-modal input,
+.create-modal select {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+.create-btns {
+    margin-top: 8px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+.confirm {
+    background: #8a9b78;
+    padding: 6px 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.cancel {
+    background: #ddd;
+    padding: 6px 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.row-half {
+    display: flex;
+    gap: 5px;          /* 두 칸 사이 여백 */
+}
+  
+.half {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.half input,
+.half select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+/* 클릭 가능 표시 */
+.search-field {
+    cursor: pointer;
+}
+
+.search-field input {
+    cursor: pointer;
+}  
